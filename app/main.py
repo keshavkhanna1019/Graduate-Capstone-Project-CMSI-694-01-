@@ -9,3 +9,5 @@ app.include_router(health_router)
 @app.get("/")
 def root():
     return {"message": "API is running"}
+
+# GCPC60-6 FastAPI skeleton
