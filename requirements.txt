@@ -1,2 +1,8 @@
 fastapi
 uvicorn
+python-multipart
+deepface
+opencv-python
+pillow
+numpy
+sqlalchemy

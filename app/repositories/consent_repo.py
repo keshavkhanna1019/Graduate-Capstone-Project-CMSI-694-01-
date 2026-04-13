@@ -1,52 +1,45 @@
-from app.db import get_connection
+from datetime import datetime, timezone
+
+from app.db import SessionLocal
+from app.models import Consent
 
 
 def create_consent(user_id: str, consent_version: str):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("""
-        INSERT OR REPLACE INTO consent (user_id, consent_version, timestamp)
-        VALUES (?, ?, datetime('now'))
-    """, (user_id, consent_version))
-
-    conn.commit()
-    conn.close()
+    db = SessionLocal()
+    try:
+        record = db.query(Consent).filter(Consent.user_id == user_id).first()
+        if record:
+            record.consent_version = consent_version
+            record.timestamp = datetime.now(timezone.utc).isoformat()
+        else:
+            db.add(Consent(
+                user_id=user_id,
+                consent_version=consent_version,
+                timestamp=datetime.now(timezone.utc).isoformat()
+            ))
+        db.commit()
+    finally:
+        db.close()
 
 
 def has_consent(user_id: str) -> bool:
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute(
-        "SELECT 1 FROM consent WHERE user_id = ?",
-        (user_id,)
-    )
-
-    result = cur.fetchone()
-    conn.close()
-
-    return result is not None
+    db = SessionLocal()
+    try:
+        return db.query(Consent).filter(Consent.user_id == user_id).first() is not None
+    finally:
+        db.close()
 
 
 def get_consent_details(user_id: str):
-    """Get consent details including timestamp for a user"""
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute(
-        "SELECT user_id, consent_version, timestamp FROM consent WHERE user_id = ?",
-        (user_id,)
-    )
-
-    result = cur.fetchone()
-    conn.close()
-
-    if result is None:
-        return None
-
-    return {
-        "user_id": result[0],
-        "consent_version": result[1],
-        "timestamp": result[2]
-    }
+    db = SessionLocal()
+    try:
+        record = db.query(Consent).filter(Consent.user_id == user_id).first()
+        if record is None:
+            return None
+        return {
+            "user_id": record.user_id,
+            "consent_version": record.consent_version,
+            "timestamp": record.timestamp
+        }
+    finally:
+        db.close()
