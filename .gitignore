@@ -1,0 +1,22 @@
+# Virtual environments
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+
+# Local runtime state (recreated on first run)
+face.db
+
+# Model weights (large; > GitHub 100MB limit — train locally or use releases/LFS)
+*.h5
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
