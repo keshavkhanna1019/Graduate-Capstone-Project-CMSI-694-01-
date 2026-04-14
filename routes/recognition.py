@@ -257,7 +257,7 @@ async def enroll_face(
     if not user_has_consent:
         raise HTTPException(
             status_code=403,
-            detail="User has not given biometric consent"
+            detail="Enrollment blocked: no biometric consent on file for this User ID. Grant consent first (Enroll tab does this automatically, or use POST /api/consent).",
         )
     
     try:

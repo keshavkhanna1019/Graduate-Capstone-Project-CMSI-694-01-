@@ -204,16 +204,16 @@ python test_enrollment.py
 ```
 
 This script will:
-1. Check if the server is running
+1. Check if the server is running (`API_ORIGIN` defaults to `http://127.0.0.1:8000`; override if you use another port)
 2. Give consent for a test user
-3. Attempt enrollment with a test image
-4. Report success or failure
+3. Attempt enrollment with `test_face.jpg` in the project root
+4. Call `GET /api/embeddings` to confirm the user appears (ticket verification)
 
 ### Manual Testing
 
 1. **Start the server** (see Running the Application)
-2. **Open the web interface** at http://localhost:8000
-3. **Test enrollment** with a clear face image
+2. **Open the web interface** at `http://127.0.0.1:<port>/` (same port as the server)
+3. **Enroll** with User ID + upload or camera; on success click **Verify — open Manage Embeddings** or check **GET /api/embeddings** in `/docs`
 4. **Test recognition** with the same or similar image
 5. **Verify results** in the web interface or API response
 
