@@ -290,21 +290,34 @@ pip install -r requirements.txt
 
 ## 📊 Model Training
 
-To train your own Siamese network model:
+Trained model files (`*.h5`) and training images (`data/`) are **not committed** to this repository — they are large, user-specific, and must be generated locally.
+
+### Option 1: Web UI (recommended)
+
+1. Open the app at `http://localhost:8000`
+2. Go to **Advanced → Collect Data**: start the camera and capture positive images (the target person) and negative images (other people) for a given User ID
+3. Go to **Advanced → Train Model**: enter the same User ID and click **Start Training** (100–200 epochs recommended)
+4. The trained model is saved as `siamese_model_{user_id}.h5` in the project root
+
+### Option 2: API
 
 ```bash
-python train_siamese.py
+# Trigger training via the REST API
+curl -X POST http://localhost:8000/api/train-model \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": "user_123", "epochs": 100, "batch_size": 16, "data_dir": "data"}'
 ```
 
-Or use the quick training script:
+Training data must be in `data/{user_id}/positive/` and `data/{user_id}/negative/` before calling this endpoint.
 
-```bash
-python quick_train.py
+### Data layout (local only, git-ignored)
+
 ```
-
-Training data should be organized in the `data/` directory:
-- `data/positive/` - Positive face samples
-- `data/negative/` - Negative face samples
+data/
+└── user_123/
+    ├── positive/   # 20–50 images of the target person
+    └── negative/   # 10–20 images of other people
+```
 
 ## 🔒 Privacy and Consent
 

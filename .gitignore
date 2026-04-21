@@ -11,6 +11,9 @@ face.db
 # Model weights (large; > GitHub 100MB limit — train locally or use releases/LFS)
 *.h5
 
+# Training images (user-specific, large — collected locally via the web UI)
+data/
+
 # Python
 __pycache__/
 *.py[cod]
