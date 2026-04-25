@@ -195,13 +195,41 @@ Deep Learning Web App/
 
 ## 🧪 Testing
 
-### Test Enrollment Script
+### Smoke check (core API paths)
 
-A test script is provided to verify the system:
+`smoke_test.py` hits every core endpoint and prints a pass/fail summary.
+The server must be running before you execute it.
 
 ```bash
-python test_enrollment.py
+# 1. Start the server (in a separate terminal or background)
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+# 2. Run the smoke check
+python smoke_test.py
+
+# Optional: use a different port
+API_ORIGIN=http://127.0.0.1:8001 python smoke_test.py
+
+# Optional: supply a face image to also exercise enroll + recognize
+python smoke_test.py --image path/to/face.jpg
 ```
+
+**Paths covered:**
+
+| Check | Endpoint |
+|---|---|
+| Health | `GET /health` |
+| Grant consent | `POST /api/consent` |
+| Check consent | `GET /api/consent/{user_id}` |
+| List all consents | `GET /api/consents` |
+| List embeddings | `GET /api/embeddings` |
+| Enroll face | `POST /api/enroll-face` *(skipped if no model or image)* |
+| Recognize face | `POST /api/recognize-face` *(skipped if no model or image)* |
+| Cleanup | `DELETE /api/consent/{user_id}` |
+
+Enroll and recognize are skipped automatically when `siamese_model*.h5` or the test image is absent — this is intentional so the script passes in a freshly-cloned repo without a trained model.
+
+Exit code is `0` on full pass, `1` if any attempted check fails.
 
 This script will:
 1. Check if the server is running (`API_ORIGIN` defaults to `http://127.0.0.1:8000`; override if you use another port)
