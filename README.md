@@ -76,7 +76,43 @@ The database will be automatically created on first run. If you need to manually
 python -m app.init_db
 ```
 
-## 🎮 Running the Application
+## 🐳 Docker
+
+### Quick start
+
+```bash
+# 1. Build the image
+docker build -t faceid-app .
+
+# 2. Run (mounts local face.db, data/, and siamese_model.h5 into the container)
+docker compose up
+```
+
+The app is then available at **http://localhost:8000**.
+
+### Mounting trained models
+
+Trained model files are git-ignored and must exist on the host before starting the container. Copy them to the project root, then add a volume line per model in `docker-compose.yml`:
+
+```yaml
+volumes:
+  - ./siamese_model.h5:/app/siamese_model.h5
+  - ./siamese_model_user_keshav.h5:/app/siamese_model_user_keshav.h5
+```
+
+### Known limitations
+
+| Limitation | Detail |
+|---|---|
+| **No GPU support** | The container runs TensorFlow on CPU. Inference is slower (~2–5s per image) compared to a GPU-enabled host. |
+| **Model size** | Each `*.h5` model is ~107 MB. They must be trained locally and bind-mounted — they are not bundled in the image. |
+| **Cold start** | First request after container start takes 10–30s while TensorFlow loads the model into memory. |
+| **SQLite** | `face.db` is a file-based database mounted as a single-file volume. Not suitable for multi-replica deployments. |
+| **Camera access** | Webcam features (Collect Data, Enroll/Recognize via camera) require browser access to a local camera. They work when the container is running on the same machine as the browser. For remote hosting, serve over HTTPS. |
+
+---
+
+## 🎮 Running the Application (without Docker)
 
 ### Option 1: Using Uvicorn Directly
 

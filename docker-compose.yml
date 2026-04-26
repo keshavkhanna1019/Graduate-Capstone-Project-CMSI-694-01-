@@ -1,0 +1,17 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Persist the SQLite database across restarts
+      - ./face.db:/app/face.db
+      # Persist training images collected via the UI
+      - ./data:/app/data
+      # Mount trained model files — copy your .h5 files to the project root
+      # before running docker compose up. Add one line per model file:
+      - ./siamese_model.h5:/app/siamese_model.h5
+      # - ./siamese_model_user_keshav.h5:/app/siamese_model_user_keshav.h5
+    restart: unless-stopped
