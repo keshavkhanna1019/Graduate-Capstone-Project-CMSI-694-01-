@@ -3,7 +3,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from datetime import datetime
-from app.repositories.consent_repo import create_consent, has_consent, get_consent_details
+from app.repositories.consent_repo import create_consent, has_consent, get_consent_details, list_all_consents, delete_consent
 
 
 
@@ -43,6 +43,19 @@ def give_consent(request: ConsentRequest):
         consent_given=True,
         timestamp=db_timestamp
     )
+
+
+@router.get("/consents")
+def get_all_consents():
+    return list_all_consents()
+
+
+@router.delete("/consent/{user_id}")
+def remove_consent(user_id: str):
+    deleted = delete_consent(user_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail=f"No consent record found for '{user_id}'")
+    return {"status": "deleted", "user_id": user_id}
 
 
 @router.get("/consent/{user_id}", response_model=ConsentResponse)

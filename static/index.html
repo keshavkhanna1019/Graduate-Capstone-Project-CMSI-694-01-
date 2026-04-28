@@ -7,11 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
             --accent: #6366f1;
@@ -27,189 +23,249 @@
             --success-bg: #ecfdf5;
             --error: #dc2626;
             --error-bg: #fef2f2;
-            --radius: 12px;
-            --radius-lg: 18px;
+            --radius: 10px;
+            --sidebar-bg: #0f0f13;
         }
+
+        html, body { height: 100%; overflow: hidden; }
 
         body {
             font-family: 'Inter', system-ui, sans-serif;
-            background: var(--bg);
-            min-height: 100vh;
-            padding: 32px 20px;
             color: var(--text);
             -webkit-font-smoothing: antialiased;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 8px 32px rgba(0,0,0,0.08);
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
-
-        .header {
-            background: #0f0f13;
-            color: #fff;
-            padding: 36px 40px 32px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -60px; right: -60px;
-            width: 220px; height: 220px;
-            background: radial-gradient(circle, rgba(99,102,241,0.35) 0%, transparent 70%);
-            pointer-events: none;
-        }
-
-        .header h1 {
-            font-size: 1.6rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            margin-bottom: 6px;
-        }
-
-        .header p {
-            color: #9ca3af;
-            font-size: 0.9rem;
-            font-weight: 400;
-        }
-
-        .content {
-            padding: 32px 40px;
-        }
-
-        /* ── Tabs ── */
-        .tab-groups-wrap {
-            margin-bottom: 28px;
-        }
-
-        .tab-row {
             display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 6px 8px;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 232px;
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            padding: 24px 18px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+
+        .brand-icon {
+            width: 34px; height: 34px;
+            background: var(--accent);
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
             margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border);
         }
 
-        .tab-row:last-of-type {
-            border-bottom: 2px solid var(--border);
-            margin-bottom: 0;
-            padding-bottom: 0;
+        .sidebar-brand h1 {
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
         }
 
-        .tab-row-label {
-            font-size: 0.68rem;
+        .sidebar-brand p {
+            color: #6b7280;
+            font-size: 0.72rem;
+            margin-top: 2px;
+        }
+
+        .sidebar-nav { padding: 14px 10px; flex: 1; }
+
+        .nav-label {
+            font-size: 0.62rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-2);
-            width: 100%;
-            margin: 0 0 2px 0;
+            letter-spacing: 0.1em;
+            color: #4b5563;
+            padding: 0 8px;
+            margin: 18px 0 5px;
         }
 
-        .tab {
-            padding: 7px 16px;
-            background: none;
-            border: 1px solid transparent;
-            border-radius: 8px;
+        .nav-label:first-child { margin-top: 4px; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 8px 10px;
+            border-radius: 7px;
             cursor: pointer;
-            font-size: 0.875rem;
+            font-size: 0.845rem;
             font-weight: 500;
-            color: var(--text-2);
-            transition: all 0.18s;
+            color: #9ca3af;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
             font-family: inherit;
+            transition: all 0.13s;
+            margin-bottom: 1px;
+            -webkit-appearance: none;
         }
 
-        .tab:hover {
-            color: var(--accent);
-            background: var(--surface-2);
-            border-color: var(--border);
+        .nav-item:hover {
+            color: #e5e7eb;
+            background: rgba(255,255,255,0.06);
         }
 
-        .tab.active {
-            color: var(--accent);
-            background: #eef2ff;
-            border-color: #c7d2fe;
-            font-weight: 600;
+        .nav-item.active {
+            color: #fff;
+            background: rgba(99,102,241,0.18);
+            border-left: 3px solid var(--accent);
+            padding-left: 7px;
         }
 
-        /* ── Misc text ── */
+        .nav-icon { width: 17px; text-align: center; font-size: 0.9rem; flex-shrink: 0; }
+
+        /* ── Main ── */
+        .main {
+            flex: 1;
+            overflow-y: auto;
+            height: 100vh;
+            background: var(--bg);
+        }
+
+        .topbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 36px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .topbar h2 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.02em;
+        }
+
         .workflow-hint {
-            font-size: 0.875rem;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.76rem;
             color: var(--text-2);
-            margin: 0 0 16px 0;
-            line-height: 1.6;
+            flex-wrap: wrap;
         }
 
-        .workflow-hint code {
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            padding: 1px 6px;
+        .wf-step {
+            background: #eef2ff;
+            border: 1px solid #c7d2fe;
             border-radius: 5px;
-            font-size: 0.82em;
+            padding: 2px 8px;
+            font-weight: 500;
+            color: #4338ca;
         }
 
-        details.quick-guide {
-            margin-bottom: 20px;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 12px 16px;
-        }
+        .wf-sep { color: #d1d5db; }
 
-        details.quick-guide summary {
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.875rem;
-            color: var(--accent);
-        }
-
-        .recognize-rank-note {
-            font-size: 0.85rem;
-            color: var(--text-2);
-            margin: 0 0 12px 0;
-            line-height: 1.5;
+        .content {
+            padding: 30px 36px 48px;
         }
 
         /* ── Tab content ── */
-        .tab-content {
-            display: none;
-        }
+        .tab-content { display: none; }
 
         .tab-content.active {
             display: block;
-            animation: fadeIn 0.22s ease;
+            animation: fadeIn 0.18s ease;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
+            from { opacity: 0; transform: translateY(4px); }
             to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-sub {
+            font-size: 0.875rem;
+            color: var(--text-2);
+            margin-bottom: 22px;
+            line-height: 1.6;
+        }
+
+        /* ── Info banners ── */
+        .banner {
+            padding: 13px 16px;
+            border-radius: var(--radius);
+            margin-bottom: 18px;
+            font-size: 0.855rem;
+            line-height: 1.6;
+            border: 1px solid transparent;
+        }
+        .banner.blue  { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+        .banner.green { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+        .banner.amber { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+        .banner.purple{ background: #faf5ff; border-color: #e9d5ff; color: #6b21a8; }
+        .banner strong { font-weight: 600; }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 22px;
+            margin-bottom: 18px;
+        }
+
+        .card h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: var(--text);
+        }
+
+        .card.danger { background: #fff9f9; border-color: #fecaca; }
+        .card.danger h3 { color: var(--error); }
+
+        /* ── Video/face detection ── */
+        .video-wrapper {
+            position: relative;
+            display: inline-block;
+            border-radius: 10px;
+            overflow: hidden;
+            max-width: 100%;
+        }
+
+        .detect-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            border-radius: 10px;
+        }
+
+        .face-status {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            min-height: 1.4em;
+            transition: color 0.2s;
         }
 
         /* ── Upload area ── */
         .upload-area {
             border: 2px dashed #c7d2fe;
             border-radius: var(--radius);
-            padding: 36px 24px;
+            padding: 34px 24px;
             text-align: center;
             background: #fafbff;
-            margin-bottom: 20px;
-            transition: all 0.18s;
+            margin-bottom: 18px;
+            transition: all 0.16s;
             cursor: pointer;
         }
 
-        .upload-area:hover {
-            border-color: var(--accent);
-            background: #eef2ff;
-        }
+        .upload-area:hover { border-color: var(--accent); background: #eef2ff; }
 
         .upload-area.dragover {
             border-color: var(--accent-dark);
@@ -217,21 +273,15 @@
             transform: scale(1.01);
         }
 
-        .upload-icon {
-            font-size: 2.5rem;
-            margin-bottom: 12px;
-            display: block;
-        }
+        .upload-icon { font-size: 2.2rem; margin-bottom: 10px; display: block; }
 
         .upload-area p {
-            font-size: 0.875rem;
+            font-size: 0.85rem;
             color: var(--text-2);
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
 
-        .file-input {
-            display: none;
-        }
+        .file-input { display: none; }
 
         /* ── Buttons ── */
         .btn {
@@ -241,15 +291,16 @@
             background: var(--accent);
             color: white;
             border: none;
-            padding: 10px 24px;
+            padding: 9px 20px;
             border-radius: 8px;
-            font-size: 0.9rem;
+            font-size: 0.855rem;
             font-weight: 600;
             font-family: inherit;
             cursor: pointer;
-            transition: all 0.18s;
-            margin: 6px;
+            transition: all 0.14s;
+            margin: 4px;
             letter-spacing: -0.01em;
+            -webkit-appearance: none;
         }
 
         .btn:hover {
@@ -266,90 +317,72 @@
         }
 
         /* ── Preview ── */
-        .preview {
-            margin: 16px 0;
-            text-align: center;
-        }
+        .preview { margin: 14px 0; text-align: center; }
 
         .preview img {
             max-width: 100%;
-            max-height: 320px;
+            max-height: 300px;
             border-radius: var(--radius);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
             border: 1px solid var(--border);
         }
 
-        /* ── Result panels ── */
+        /* ── Results ── */
         .result {
-            margin-top: 24px;
-            padding: 18px 20px;
+            margin-top: 18px;
+            padding: 15px 18px;
             border-radius: var(--radius);
-            font-size: 0.9rem;
+            font-size: 0.875rem;
             line-height: 1.6;
         }
 
-        .result.success {
-            background: var(--success-bg);
-            border: 1px solid #6ee7b7;
-            color: #065f46;
-        }
-
-        .result.error {
-            background: var(--error-bg);
-            border: 1px solid #fca5a5;
-            color: #991b1b;
-        }
-
-        .result h3 {
-            margin-bottom: 10px;
-            font-size: 1rem;
-        }
+        .result.success { background: var(--success-bg); border: 1px solid #6ee7b7; color: #065f46; }
+        .result.error   { background: var(--error-bg);   border: 1px solid #fca5a5; color: #991b1b; }
+        .result h3      { margin-bottom: 8px; font-size: 0.95rem; }
 
         /* ── Match items ── */
         .match-item {
             background: var(--surface-2);
             border: 1px solid var(--border);
-            padding: 12px 16px;
-            margin: 8px 0;
+            padding: 11px 15px;
+            margin: 7px 0;
             border-radius: var(--radius);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
         }
 
         .match-score {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 700;
             color: var(--accent);
             background: #eef2ff;
-            padding: 3px 10px;
+            padding: 2px 10px;
             border-radius: 20px;
         }
 
         /* ── Inputs ── */
-        .input-group {
-            margin: 16px 0;
-        }
+        .input-group { margin: 14px 0; }
 
         .input-group label {
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
             font-weight: 600;
-            font-size: 0.875rem;
+            font-size: 0.845rem;
             color: var(--text);
         }
 
         .input-group input {
             width: 100%;
-            padding: 10px 14px;
+            padding: 9px 13px;
             border: 1.5px solid var(--border);
             border-radius: 8px;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
             font-family: inherit;
             background: var(--surface);
             color: var(--text);
-            transition: border-color 0.18s, box-shadow 0.18s;
+            transition: border-color 0.16s, box-shadow 0.16s;
         }
 
         .input-group input:focus {
@@ -359,176 +392,119 @@
         }
 
         /* ── Loading ── */
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .loading.active {
-            display: block;
-        }
-
-        .loading p {
-            font-size: 0.875rem;
-            color: var(--text-2);
-            margin-top: 10px;
-        }
+        .loading { display: none; text-align: center; padding: 18px; }
+        .loading.active { display: block; }
+        .loading p { font-size: 0.855rem; color: var(--text-2); margin-top: 10px; }
 
         .spinner {
             border: 3px solid var(--border);
             border-top: 3px solid var(--accent);
             border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            animation: spin 0.75s linear infinite;
+            width: 30px; height: 30px;
+            animation: spin 0.7s linear infinite;
             margin: 0 auto;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ── Stats cards ── */
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 16px;
-            margin-top: 24px;
-        }
-
-        .stat-card {
-            background: #0f0f13;
-            color: white;
-            padding: 18px 20px;
-            border-radius: var(--radius);
-            text-align: center;
-        }
-
-        .stat-card h4 {
-            font-size: 0.75rem;
-            font-weight: 500;
-            opacity: 0.6;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-
-        .stat-card .value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            letter-spacing: -0.03em;
-        }
-
-        /* ── Section info boxes ── */
-        [style*="background: #e8f5e9"],
-        [style*="background: #fff3e0"],
-        [style*="background: #f3e5f5"],
-        [style*="background: #e3f2fd"],
-        [style*="background: #fce4ec"] {
-            border-radius: var(--radius) !important;
-            font-size: 0.875rem !important;
+        .recognize-rank-note {
+            font-size: 0.83rem;
+            color: var(--text-2);
+            margin: 0 0 10px 0;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Face Recognition</h1>
-            <p>Enroll and recognize faces using deep learning</p>
+
+    <!-- ── Sidebar ── -->
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">👁</div>
+            <h1>FaceID</h1>
+            <p>Deep learning recognition</p>
+        </div>
+        <div class="sidebar-nav">
+            <div class="nav-label">Core</div>
+            <button type="button" id="tab-btn-enroll" class="nav-item active" onclick="switchTab('enroll', this)">
+                <span class="nav-icon">🪪</span> Enroll Face
+            </button>
+            <button type="button" id="tab-btn-recognize" class="nav-item" onclick="switchTab('recognize', this)">
+                <span class="nav-icon">🔍</span> Recognize Face
+            </button>
+            <button type="button" id="tab-btn-manage" class="nav-item" onclick="switchTab('manage', this)">
+                <span class="nav-icon">🗃</span> Manage
+            </button>
+
+            <div class="nav-label">Advanced</div>
+            <button type="button" class="nav-item" onclick="switchTab('collect', this)">
+                <span class="nav-icon">📸</span> Collect Data
+            </button>
+            <button type="button" class="nav-item" onclick="switchTab('train', this)">
+                <span class="nav-icon">🏋️</span> Train Model
+            </button>
+            <button type="button" class="nav-item" onclick="switchTab('consent', this)">
+                <span class="nav-icon">🔐</span> Consent
+            </button>
+            <button type="button" class="nav-item" onclick="switchTab('extract', this)">
+                <span class="nav-icon">🔬</span> Debug
+            </button>
+        </div>
+    </nav>
+
+    <!-- ── Main ── -->
+    <div class="main">
+        <div class="topbar">
+            <h2 id="page-title">Enroll Face</h2>
+            <div class="workflow-hint">
+                <span class="wf-step">Collect</span><span class="wf-sep">→</span>
+                <span class="wf-step">Train</span><span class="wf-sep">→</span>
+                <span class="wf-step">Enroll</span><span class="wf-sep">→</span>
+                <span class="wf-step">Recognize</span>
+            </div>
         </div>
 
         <div class="content">
-            <p class="workflow-hint">
-                <strong>Where you are:</strong> pick a section below.
-                <strong>Typical path:</strong> <code>Collect data</code> → <code>Train</code> → <code>Enroll</code> → <code>Recognize</code>.
-                Recognition always picks the <strong>closest enrolled user</strong> in the database, not “who you meant.”
-            </p>
 
-            <details class="quick-guide">
-                <summary>Full guide — what each tab does (click to expand)</summary>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 15px;">
-                    <div style="background: white; padding: 10px; border-radius: 5px;">
-                        <strong>Collect Data</strong><br>
-                        <small>Webcam → save images for training</small>
-                    </div>
-                    <div style="background: white; padding: 10px; border-radius: 5px;">
-                        <strong>Train Model</strong><br>
-                        <small>Build <code>siamese_model_&lt;user&gt;.h5</code></small>
-                    </div>
-                    <div style="background: white; padding: 10px; border-radius: 5px;">
-                        <strong>Enroll Face</strong><br>
-                        <small>Save an embedding for a User ID</small>
-                    </div>
-                    <div style="background: white; padding: 10px; border-radius: 5px;">
-                        <strong>Recognize Face</strong><br>
-                        <small>Compare photo to <em>all</em> enrolled users</small>
-                    </div>
-                    <div style="background: white; padding: 10px; border-radius: 5px;">
-                        <strong>Manage / Consent / Extract</strong><br>
-                        <small>List or delete enrollments; consent; debug vectors</small>
-                    </div>
-                </div>
-                <p style="margin-top: 12px; font-size: 0.9em; color: #555;">
-                    Enroll, Recognize, and Extract all turn a face image into an embedding using your trained model. Recognition then ranks <strong>every</strong> active enrollment by similarity.
-                </p>
-            </details>
-
-            <div class="tab-groups-wrap">
-                <div class="tab-row">
-                    <span class="tab-row-label">Daily use</span>
-                    <button type="button" id="tab-btn-enroll" class="tab active" onclick="switchTab('enroll', this)">Enroll Face</button>
-                    <button type="button" id="tab-btn-recognize" class="tab" onclick="switchTab('recognize', this)">Recognize Face</button>
-                    <button type="button" id="tab-btn-manage" class="tab" onclick="switchTab('manage', this)">Manage Embeddings</button>
-                </div>
-                <div class="tab-row">
-                    <span class="tab-row-label">First-time setup (per person)</span>
-                    <button type="button" class="tab" onclick="switchTab('collect', this)">Collect Data</button>
-                    <button type="button" class="tab" onclick="switchTab('train', this)">Train Model</button>
-                </div>
-                <div class="tab-row">
-                    <span class="tab-row-label">Other</span>
-                    <button type="button" class="tab" onclick="switchTab('consent', this)">Consent</button>
-                    <button type="button" class="tab" onclick="switchTab('extract', this)">Extract Embedding (debug)</button>
-                </div>
-            </div>
-
-            <!-- Enroll Tab -->
+            <!-- Enroll -->
             <div id="enroll" class="tab-content active">
-                <h2>Enroll a New Face</h2>
-                <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
-                    <strong>📝 What this does:</strong> Adds a new person to the system so they can be recognized later.
-                    <br><strong>When to use:</strong> When you want to register someone's face for the first time.
-                    <br><strong>Result:</strong> Their face embedding is saved in the database.
+                <p class="section-sub">Adds a new person to the system so they can be recognized later. Consent is recorded automatically.</p>
+
+                <div class="banner blue">
+                    <strong>When to use:</strong> Register someone's face for the first time. Their embedding is saved in the database.
+                    Use <strong>Manage</strong> after enrollment to confirm they appear in the list.
                 </div>
-                <p style="color: #666; margin-bottom: 20px;">Upload a photo or use the camera, then click <strong>Enroll Face</strong>. Consent for that User ID is recorded automatically before enrollment. Use <strong>Manage Embeddings</strong> after success to confirm the user appears in the list.</p>
-                
+
                 <div class="input-group">
-                    <label for="enroll-user-id">User ID:</label>
+                    <label for="enroll-user-id">User ID</label>
                     <input type="text" id="enroll-user-id" placeholder="e.g., user_123" required>
                 </div>
 
-                <div style="text-align: center; margin-bottom: 15px;">
-                    <button class="btn" id="enroll-camera-toggle-btn" onclick="toggleEnrollCamera()" style="background: #4caf50;">📹 Use Camera Instead</button>
+                <div style="margin-bottom: 14px;">
+                    <button class="btn" id="enroll-camera-toggle-btn" onclick="toggleEnrollCamera()" style="background:#059669;margin-left:0;">📹 Use Camera Instead</button>
                 </div>
 
                 <div class="upload-area" id="enroll-upload"
-                     ondrop="handleDrop(event, 'enroll')"
+                     ondrop="handleDrop(event,'enroll')"
                      ondragover="handleDragOver(event)"
                      ondragleave="handleDragLeave(event)">
                     <div class="upload-icon">📷</div>
                     <p>Drag and drop an image here, or click to select</p>
-                    <input type="file" id="enroll-file" class="file-input" accept="image/*" onchange="handleFileSelect(event, 'enroll')">
+                    <input type="file" id="enroll-file" class="file-input" accept="image/*" onchange="handleFileSelect(event,'enroll')">
                     <button class="btn" onclick="document.getElementById('enroll-file').click()">Choose File</button>
                 </div>
 
-                <div id="enroll-camera-container" style="display: none; text-align: center; margin: 20px 0;">
-                    <video id="enroll-video" autoplay playsinline style="max-width: 100%; border-radius: 10px; background: #000; max-height: 360px;"></video>
-                    <canvas id="enroll-canvas" style="display: none;"></canvas>
-                    <div style="margin-top: 15px;">
-                        <button class="btn" onclick="captureEnrollFrame()" style="background: #2196f3;">📷 Capture Frame</button>
+                <div id="enroll-camera-container" style="display:none;text-align:center;margin:20px 0;">
+                    <div class="video-wrapper">
+                        <video id="enroll-video" autoplay playsinline style="max-width:100%;border-radius:10px;background:#000;max-height:360px;display:block;"></video>
+                        <canvas id="enroll-detect-canvas" class="detect-canvas"></canvas>
                     </div>
-                    <div id="enroll-capture-preview" style="margin-top: 15px;"></div>
+                    <canvas id="enroll-canvas" style="display:none;"></canvas>
+                    <p id="enroll-face-status" class="face-status" style="color:#6b7280;">Position your face in frame</p>
+                    <div style="margin-top:10px;">
+                        <button class="btn" id="enroll-capture-btn" onclick="captureEnrollFrame()" style="background:#2196f3;" disabled>📷 Capture Frame</button>
+                    </div>
+                    <div id="enroll-capture-preview" style="margin-top:15px;"></div>
                 </div>
 
                 <div class="preview" id="enroll-preview"></div>
@@ -538,40 +514,44 @@
                     <p>Processing image...</p>
                 </div>
 
-                <button class="btn" id="enroll-btn" onclick="enrollFace()" disabled>Enroll Face</button>
+                <button class="btn" id="enroll-btn" onclick="enrollFace()" disabled style="margin-left:0;">Enroll Face</button>
 
                 <div class="result" id="enroll-result"></div>
             </div>
 
-            <!-- Recognize Tab -->
+            <!-- Recognize -->
             <div id="recognize" class="tab-content">
-                <h2>Recognize a Face</h2>
-                <div style="background: #fff3e0; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #ff9800;">
-                    <strong>What happens here:</strong> Your photo is compared to <strong>all</strong> users still enrolled in the database. The top result is whoever has the <strong>highest similarity score</strong>, not the User ID you used on another tab.
-                </div>
-                <p style="color: #666; margin-bottom: 20px;">Upload a photo. The results list shows several possible matches if more than one person is enrolled.</p>
+                <p class="section-sub">Compare a photo against all enrolled users and rank them by similarity score.</p>
 
-                <div style="text-align: center; margin-bottom: 15px;">
-                    <button class="btn" id="recognize-camera-toggle-btn" onclick="toggleRecognizeCamera()" style="background: #4caf50;">📹 Use Camera Instead</button>
+                <div class="banner amber">
+                    <strong>How it works:</strong> Your photo is compared to <strong>all</strong> enrolled users. The #1 result is whoever matched best — not necessarily the last user ID you typed.
+                </div>
+
+                <div style="margin-bottom:14px;">
+                    <button class="btn" id="recognize-camera-toggle-btn" onclick="toggleRecognizeCamera()" style="background:#059669;margin-left:0;">📹 Use Camera Instead</button>
                 </div>
 
                 <div class="upload-area" id="recognize-upload"
-                     ondrop="handleDrop(event, 'recognize')"
+                     ondrop="handleDrop(event,'recognize')"
                      ondragover="handleDragOver(event)"
                      ondragleave="handleDragLeave(event)">
                     <div class="upload-icon">🔍</div>
                     <p>Drag and drop an image here, or click to select</p>
-                    <input type="file" id="recognize-file" class="file-input" accept="image/*" onchange="handleFileSelect(event, 'recognize')">
+                    <input type="file" id="recognize-file" class="file-input" accept="image/*" onchange="handleFileSelect(event,'recognize')">
                     <button class="btn" onclick="document.getElementById('recognize-file').click()">Choose File</button>
                 </div>
 
-                <div id="recognize-camera-container" style="display: none; text-align: center; margin: 20px 0;">
-                    <video id="recognize-video" autoplay playsinline style="max-width: 100%; border-radius: 10px; background: #000; max-height: 360px;"></video>
-                    <canvas id="recognize-canvas" style="display: none;"></canvas>
-                    <div style="margin-top: 15px;">
-                        <button class="btn" onclick="captureRecognizeFrame()" style="background: #ff9800;">📷 Capture Frame</button>
+                <div id="recognize-camera-container" style="display:none;text-align:center;margin:20px 0;">
+                    <div class="video-wrapper">
+                        <video id="recognize-video" autoplay playsinline style="max-width:100%;border-radius:10px;background:#000;max-height:360px;display:block;"></video>
+                        <canvas id="recognize-detect-canvas" class="detect-canvas"></canvas>
                     </div>
-                    <div id="recognize-capture-preview" style="margin-top: 15px;"></div>
+                    <canvas id="recognize-canvas" style="display:none;"></canvas>
+                    <p id="recognize-face-status" class="face-status" style="color:#6b7280;">Position your face in frame</p>
+                    <div style="margin-top:10px;">
+                        <button class="btn" id="recognize-capture-btn" onclick="captureRecognizeFrame()" style="background:#f59e0b;" disabled>📷 Capture Frame</button>
+                    </div>
+                    <div id="recognize-capture-preview" style="margin-top:15px;"></div>
                 </div>
 
                 <div class="preview" id="recognize-preview"></div>
@@ -581,28 +561,26 @@
                     <p>Processing image...</p>
                 </div>
 
-                <button class="btn" id="recognize-btn" onclick="recognizeFace()" disabled>Recognize Face</button>
+                <button class="btn" id="recognize-btn" onclick="recognizeFace()" disabled style="margin-left:0;">Recognize Face</button>
 
                 <div class="result" id="recognize-result"></div>
             </div>
 
-            <!-- Extract Tab -->
+            <!-- Debug / Extract -->
             <div id="extract" class="tab-content">
-                <h2>Extract Face Embedding</h2>
-                <div style="background: #f3e5f5; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #9c27b0;">
-                    <strong>🔬 What this does:</strong> Converts a face image into a numerical vector (embedding) that represents the face.
-                    <br><strong>When to use:</strong> For testing/debugging - see the raw embedding values the model produces.
-                    <br><strong>Result:</strong> Shows the embedding vector (list of numbers) and model info.
+                <p class="section-sub">Extract the raw face embedding vector from an image for debugging purposes.</p>
+
+                <div class="banner purple">
+                    <strong>Debug tool:</strong> See the raw values the Siamese model produces. Useful for diagnosing embedding collapse.
                 </div>
-                <p style="color: #666; margin-bottom: 20px;">Upload a photo to extract its face embedding (vector representation).</p>
 
                 <div class="upload-area" id="extract-upload"
-                     ondrop="handleDrop(event, 'extract')" 
-                     ondragover="handleDragOver(event)" 
+                     ondrop="handleDrop(event,'extract')"
+                     ondragover="handleDragOver(event)"
                      ondragleave="handleDragLeave(event)">
                     <div class="upload-icon">🔬</div>
                     <p>Drag and drop an image here, or click to select</p>
-                    <input type="file" id="extract-file" class="file-input" accept="image/*" onchange="handleFileSelect(event, 'extract')">
+                    <input type="file" id="extract-file" class="file-input" accept="image/*" onchange="handleFileSelect(event,'extract')">
                     <button class="btn" onclick="document.getElementById('extract-file').click()">Choose File</button>
                 </div>
 
@@ -613,131 +591,123 @@
                     <p>Extracting embedding...</p>
                 </div>
 
-                <button class="btn" id="extract-btn" onclick="extractEmbedding()" disabled>Extract Embedding</button>
+                <button class="btn" id="extract-btn" onclick="extractEmbedding()" disabled style="margin-left:0;">Extract Embedding</button>
 
                 <div class="result" id="extract-result"></div>
             </div>
 
-            <!-- Collect Data Tab -->
+            <!-- Collect Data -->
             <div id="collect" class="tab-content">
-                <h2>Collect Training Data</h2>
-                <div style="background: #e8f5e9; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #4caf50;">
-                    <strong>📸 What this does:</strong> Uses your webcam to collect face images for training a user-specific AI model.
-                    <br><strong>When to use:</strong> BEFORE training - collect photos of faces to teach the model.
-                    <br><strong>Result:</strong> Saves images to data/{user_id}/positive/ and data/{user_id}/negative/ folders.
-                    <br><strong>Workflow:</strong> Collect Data → Train Model → Enroll/Recognize
-                </div>
-                <p style="color: #666; margin-bottom: 20px;">Use your webcam to collect positive (user's images) and negative (other people's images) for training the Siamese network.</p>
+                <p class="section-sub">Capture training images from your webcam. This is the first step before training.</p>
 
-                <div class="input-group" style="margin-bottom: 20px;">
-                    <label for="collect-user-id">User ID:</label>
+                <div class="banner green">
+                    <strong>Workflow:</strong> <strong>Collect Data</strong> → Train Model → Enroll → Recognize<br>
+                    Capture the target person as <strong>Positive</strong> and other people as <strong>Negative</strong>.
+                </div>
+
+                <div class="input-group" style="margin-bottom:18px;">
+                    <label for="collect-user-id">User ID</label>
                     <input type="text" id="collect-user-id" placeholder="e.g., user_123" required>
-                    <small style="color: #666;">The user ID to collect data for. Images will be saved to data/{user_id}/positive/ and data/{user_id}/negative/</small>
+                    <small style="color:#6b7280;font-size:0.78rem;">Images saved to data/{user_id}/positive/ and negative/</small>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
-                    <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; text-align: center;">
-                        <div style="font-size: 2em; margin-bottom: 10px;">📷</div>
-                        <strong>Positive</strong>
-                        <div style="font-size: 0.9em; color: #666; margin-top: 5px;">User's images</div>
-                        <div id="positive-count" style="font-size: 1.5em; color: #2196f3; margin-top: 5px;">0</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+                    <div class="card" style="text-align:center;padding:18px;">
+                        <div style="font-size:1.8rem;margin-bottom:6px;">📷</div>
+                        <strong style="font-size:0.875rem;">Positive</strong>
+                        <div style="font-size:0.78rem;color:#6b7280;margin-top:3px;">User's images</div>
+                        <div id="positive-count" style="font-size:1.7rem;font-weight:700;color:var(--accent);margin-top:6px;">0</div>
                     </div>
-                    <div style="background: #fff3e0; padding: 15px; border-radius: 10px; text-align: center;">
-                        <div style="font-size: 2em; margin-bottom: 10px;">👤</div>
-                        <strong>Negative</strong>
-                        <div style="font-size: 0.9em; color: #666; margin-top: 5px;">Other people's images</div>
-                        <div id="negative-count" style="font-size: 1.5em; color: #ff9800; margin-top: 5px;">0</div>
-                    </div>
-                </div>
-
-                <div style="text-align: center; margin: 20px 0;">
-                    <button class="btn" id="start-camera-btn" onclick="startCamera()">📹 Start Camera</button>
-                    <button class="btn" id="stop-camera-btn" onclick="stopCamera()" style="display: none; background: #dc3545;">⏹ Stop Camera</button>
-                </div>
-
-                <div id="camera-container" style="display: none; text-align: center; margin: 20px 0;">
-                    <video id="video" autoplay playsinline style="max-width: 100%; border-radius: 10px; background: #000; max-height: 480px;"></video>
-                    <canvas id="canvas" style="display: none;"></canvas>
-                    
-                    <div style="margin-top: 20px;">
-                        <button class="btn" onclick="captureImage('positive')" style="background: #2196f3; margin: 5px;">📷 Capture Positive (User's Image)</button>
-                        <button class="btn" onclick="captureImage('negative')" style="background: #ff9800; margin: 5px;">👤 Capture Negative (Other Person)</button>
+                    <div class="card" style="text-align:center;padding:18px;">
+                        <div style="font-size:1.8rem;margin-bottom:6px;">👤</div>
+                        <strong style="font-size:0.875rem;">Negative</strong>
+                        <div style="font-size:0.78rem;color:#6b7280;margin-top:3px;">Other people</div>
+                        <div id="negative-count" style="font-size:1.7rem;font-weight:700;color:#f59e0b;margin-top:6px;">0</div>
                     </div>
                 </div>
 
-                <div id="capture-preview" style="margin: 20px 0; text-align: center;"></div>
+                <div style="margin:18px 0;">
+                    <button class="btn" id="start-camera-btn" onclick="startCamera()" style="margin-left:0;">📹 Start Camera</button>
+                    <button class="btn" id="stop-camera-btn" onclick="stopCamera()" style="display:none;background:#dc3545;">⏹ Stop Camera</button>
+                </div>
 
-                <div style="margin-top: 30px; padding: 20px; background: #f5f5f5; border-radius: 10px;">
-                    <h3>Instructions:</h3>
-                    <ol style="text-align: left; line-height: 1.8;">
-                        <li><strong>Enter User ID:</strong> Enter the user ID (e.g., user_123) to collect data for</li>
-                        <li><strong>Positive:</strong> Take multiple photos of the USER (different angles, expressions, lighting)</li>
-                        <li><strong>Negative:</strong> Take photos of DIFFERENT people (not the user)</li>
-                        <li>Collect at least 20-50 positive images and 10-20 negative images for good results</li>
-                        <li>Images are saved to <code>data/{user_id}/positive/</code> and <code>data/{user_id}/negative/</code></li>
-                        <li>After collecting data, go to "Train Model" tab to start training for this user</li>
+                <div id="camera-container" style="display:none;text-align:center;margin:20px 0;">
+                    <div class="video-wrapper">
+                        <video id="video" autoplay playsinline style="max-width:100%;border-radius:10px;background:#000;max-height:480px;display:block;"></video>
+                        <canvas id="collect-detect-canvas" class="detect-canvas"></canvas>
+                    </div>
+                    <canvas id="canvas" style="display:none;"></canvas>
+                    <p id="collect-face-status" class="face-status" style="color:#6b7280;">Position your face in frame</p>
+                    <div style="margin-top:12px;">
+                        <button class="btn" id="capture-positive-btn" onclick="captureImage('positive')" style="background:#2196f3;" disabled>📷 Capture Positive</button>
+                        <button class="btn" id="capture-negative-btn" onclick="captureImage('negative')" style="background:#f59e0b;" disabled>👤 Capture Negative</button>
+                    </div>
+                </div>
+
+                <div id="capture-preview" style="margin:18px 0;text-align:center;"></div>
+
+                <div class="card" style="margin-top:16px;">
+                    <h3>Instructions</h3>
+                    <ol style="line-height:1.9;font-size:0.855rem;color:#374151;padding-left:18px;">
+                        <li>Enter a User ID for the person you're training</li>
+                        <li><strong>Positive:</strong> Capture 20–50 photos of that person (angles, expressions, lighting)</li>
+                        <li><strong>Negative:</strong> Capture 10–20 photos of different people</li>
+                        <li>Then go to <strong>Train Model</strong> to train the Siamese network</li>
                     </ol>
                 </div>
 
-                <div style="margin-top: 20px;">
-                    <button class="btn" onclick="refreshStats()" style="background: #666;">🔄 Refresh Stats</button>
-                    <button class="btn" onclick="clearCategory('positive')" style="background: #dc3545; margin-left: 10px;">🗑 Clear Positive</button>
-                    <button class="btn" onclick="clearCategory('negative')" style="background: #dc3545; margin-left: 10px;">🗑 Clear Negative</button>
+                <div style="margin-top:14px;">
+                    <button class="btn" onclick="refreshStats()" style="background:#6b7280;margin-left:0;">🔄 Refresh Stats</button>
+                    <button class="btn" onclick="clearCategory('positive')" style="background:#dc3545;">🗑 Clear Positive</button>
+                    <button class="btn" onclick="clearCategory('negative')" style="background:#dc3545;">🗑 Clear Negative</button>
                 </div>
 
                 <div class="result" id="collect-result"></div>
             </div>
 
-            <!-- Train Model Tab -->
+            <!-- Train Model -->
             <div id="train" class="tab-content">
-                <h2>Train Siamese Model</h2>
-                <div style="background: #fff9c4; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #fbc02d;">
-                    <strong>🏋️ What this does:</strong> Trains the AI model to recognize faces using your collected images.
-                    <br><strong>When to use:</strong> AFTER collecting data - this teaches the model what faces look like.
-                    <br><strong>Result:</strong> Creates siamese_model_v2.h5 file that the system uses for recognition.
-                    <br><strong>Workflow:</strong> Collect Data → Train Model → Enroll/Recognize
+                <p class="section-sub">Train the Siamese neural network on your collected images. Run this after collecting enough data.</p>
+
+                <div class="banner amber">
+                    <strong>Workflow:</strong> Collect Data → <strong>Train Model</strong> → Enroll → Recognize<br>
+                    100–200 epochs recommended for good accuracy.
                 </div>
-                <p style="color: #666; margin-bottom: 20px;">Train the Siamese neural network for a specific user. Data should be organized as <code>data/{user_id}/positive/</code> (user's images) and <code>data/{user_id}/negative/</code> (other people's images).</p>
 
                 <div class="input-group">
-                    <label for="train-user-id">User ID:</label>
+                    <label for="train-user-id">User ID</label>
                     <input type="text" id="train-user-id" placeholder="e.g., user_123" required>
-                    <small style="color: #666;">The user ID to train the model for. Each user gets their own model.</small>
+                    <small style="color:#6b7280;font-size:0.78rem;">Each user gets their own trained model.</small>
                 </div>
-
                 <div class="input-group">
-                    <label for="train-epochs">Epochs:</label>
+                    <label for="train-epochs">Epochs</label>
                     <input type="number" id="train-epochs" value="50" min="1" max="200">
-                    <small style="color: #666;">Number of training epochs (more = better but slower, recommend 100-200)</small>
+                    <small style="color:#6b7280;font-size:0.78rem;">More = better accuracy but slower (recommend 100–200)</small>
                 </div>
-
                 <div class="input-group">
-                    <label for="train-batch-size">Batch Size:</label>
+                    <label for="train-batch-size">Batch Size</label>
                     <input type="number" id="train-batch-size" value="16" min="1" max="64">
-                    <small style="color: #666;">Batch size for training</small>
                 </div>
-
                 <div class="input-group">
-                    <label for="train-data-dir">Data Directory:</label>
+                    <label for="train-data-dir">Data Directory</label>
                     <input type="text" id="train-data-dir" value="data" placeholder="data">
-                    <small style="color: #666;">Base directory (data/) containing user-specific folders</small>
                 </div>
 
-                <button class="btn" id="train-btn" onclick="startTraining()">Start Training</button>
-                <button class="btn" id="train-stop-btn" onclick="stopTraining()" style="display: none; background: #dc3545;">Stop Training</button>
+                <button class="btn" id="train-btn" onclick="startTraining()" style="margin-left:0;">Start Training</button>
+                <button class="btn" id="train-stop-btn" onclick="stopTraining()" style="display:none;background:#dc3545;">Stop Training</button>
 
-                <div class="loading" id="train-loading" style="display: none;">
+                <div class="loading" id="train-loading" style="display:none;">
                     <div class="spinner"></div>
                     <p id="train-status-text">Starting training...</p>
                 </div>
 
-                <div id="train-progress" style="margin: 20px 0; display: none;">
-                    <div style="background: #e0e0e0; border-radius: 10px; height: 30px; position: relative; overflow: hidden;">
-                        <div id="train-progress-bar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                <div id="train-progress" style="margin:20px 0;display:none;">
+                    <div style="background:#e5e7eb;border-radius:8px;height:26px;overflow:hidden;">
+                        <div id="train-progress-bar" style="background:linear-gradient(90deg,var(--accent),var(--accent-dark));height:100%;width:0%;transition:width 0.3s;display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:0.82rem;">
                             <span id="train-progress-text">0%</span>
                         </div>
                     </div>
-                    <div style="margin-top: 10px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                    <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:0.855rem;">
                         <div><strong>Epoch:</strong> <span id="train-epoch">0</span>/<span id="train-total-epochs">0</span></div>
                         <div><strong>Loss:</strong> <span id="train-loss">-</span></div>
                     </div>
@@ -746,89 +716,125 @@
                 <div class="result" id="train-result"></div>
             </div>
 
-            <!-- Consent Management Tab -->
+            <!-- Consent -->
             <div id="consent" class="tab-content">
-                <h2>Consent Management</h2>
-                <div style="background: #e8f5e9; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #4caf50;">
-                    <strong>🔐 What this does:</strong> Manage biometric consent for users.
-                    <br><strong>When to use:</strong> Before enrolling a face - users must give consent first.
-                    <br><strong>Result:</strong> Users can be enrolled and recognized only if they have given consent.
-                </div>
-                <p style="color: #666; margin-bottom: 20px;">Manage user consent for biometric data usage. Users must give consent before their face can be enrolled in the system.</p>
-                
-                <div style="background: #f5f5f5; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                    <h3 style="margin-bottom: 15px;">Grant Consent</h3>
+                <p class="section-sub">Manage biometric consent records. Users must give consent before their face can be enrolled.</p>
+
+                <div class="card">
+                    <h3>Grant Consent</h3>
                     <div class="input-group">
-                        <label for="consent-user-id">User ID:</label>
+                        <label for="consent-user-id">User ID</label>
                         <input type="text" id="consent-user-id" placeholder="e.g., user_123" required>
                     </div>
                     <div class="input-group">
-                        <label for="consent-version">Consent Version:</label>
+                        <label for="consent-version">Consent Version</label>
                         <input type="text" id="consent-version" placeholder="e.g., v1.0" value="v1.0" required>
                     </div>
-                    <button class="btn" onclick="grantConsent()">Grant Consent</button>
-                    <div class="result" id="consent-grant-result" style="margin-top: 15px;"></div>
+                    <button class="btn" onclick="grantConsent()" style="margin-left:0;">Grant Consent</button>
+                    <div class="result" id="consent-grant-result" style="margin-top:14px;"></div>
                 </div>
 
-                <div style="background: #f5f5f5; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                    <h3 style="margin-bottom: 15px;">Check Consent Status</h3>
+                <div class="card">
+                    <h3>Check Consent Status</h3>
                     <div class="input-group">
-                        <label for="check-consent-user-id">User ID:</label>
+                        <label for="check-consent-user-id">User ID</label>
                         <input type="text" id="check-consent-user-id" placeholder="e.g., user_123" required>
                     </div>
-                    <button class="btn" onclick="checkConsent()">Check Consent</button>
-                    <div class="result" id="consent-check-result" style="margin-top: 15px;"></div>
+                    <button class="btn" onclick="checkConsent()" style="margin-left:0;">Check Consent</button>
+                    <div class="result" id="consent-check-result" style="margin-top:14px;"></div>
                 </div>
 
-                <div style="background: #fff3e0; padding: 20px; border-radius: 10px;">
-                    <h3 style="margin-bottom: 15px;">⚠️ Important Notes</h3>
-                    <ul style="color: #666; line-height: 1.8;">
-                        <li>Users must give consent before their face can be enrolled</li>
-                        <li>Consent is stored with a timestamp and version</li>
-                        <li>Without consent, enrollment will be rejected</li>
-                        <li>Consent can be checked before attempting enrollment</li>
-                    </ul>
+                <div class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                        <h3 style="margin:0;">All Consents</h3>
+                        <button class="btn" onclick="loadAllConsents()" style="margin:0;padding:6px 14px;font-size:0.8rem;">🔄 Refresh</button>
+                    </div>
+                    <div id="all-consents-list">
+                        <p style="color:#6b7280;font-size:0.855rem;">Click Refresh to load all consent records.</p>
+                    </div>
+                </div>
+
+                <div class="card danger">
+                    <h3>Delete Consent</h3>
+                    <p style="color:#6b7280;font-size:0.845rem;margin-bottom:14px;">Removes consent for a user. Enrollment will be blocked until consent is granted again.</p>
+                    <div class="input-group">
+                        <label for="delete-consent-user-id">User ID</label>
+                        <input type="text" id="delete-consent-user-id" placeholder="e.g., user_123">
+                    </div>
+                    <button class="btn" onclick="deleteConsent()" style="background:#dc2626;margin-left:0;">Delete Consent</button>
+                    <div class="result" id="delete-consent-result" style="margin-top:14px;"></div>
                 </div>
             </div>
 
-            <!-- Manage Embeddings Tab -->
+            <!-- Manage -->
             <div id="manage" class="tab-content">
-                <h2>Manage Embeddings</h2>
-                <div style="background: #fff3e0; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #ff9800;">
-                    <strong>🗑️ What this does:</strong> View and delete enrolled face embeddings.
-                    <br><strong>When to use:</strong> When you want to remove a user's enrollment or clean up old enrollments.
-                    <br><strong>Result:</strong> Embeddings are permanently deleted from the database.
-                </div>
-                <p style="color: #666; margin-bottom: 20px;">Manage enrolled face embeddings. You can view all enrolled users and delete embeddings that are no longer needed.</p>
-                
-                <div style="margin-bottom: 20px;">
-                    <button class="btn" onclick="loadEmbeddings()" style="background: #2196f3;">🔄 Refresh List</button>
+                <p class="section-sub">View and remove enrolled face embeddings from the database.</p>
+
+                <div style="margin-bottom:18px;">
+                    <button class="btn" onclick="loadEmbeddings()" style="background:#2196f3;margin-left:0;">🔄 Refresh List</button>
                 </div>
 
-                <div id="embeddings-list" style="margin-top: 20px;">
-                    <div style="text-align: center; color: #666; padding: 40px;">
+                <div id="embeddings-list">
+                    <div style="text-align:center;color:#6b7280;padding:40px;">
                         <p>Click "Refresh List" to load enrolled users</p>
                     </div>
                 </div>
 
-                <div class="result" id="manage-result" style="margin-top: 20px;"></div>
+                <div class="result" id="manage-result" style="margin-top:18px;"></div>
+
+                <!-- Gallery -->
+                <div style="margin-top:34px;border-top:1px solid var(--border);padding-top:26px;">
+                    <h3 style="font-size:1rem;font-weight:700;margin-bottom:5px;">Training Image Gallery</h3>
+                    <p style="color:#6b7280;font-size:0.855rem;margin-bottom:16px;">View positive and negative training photos for any user.</p>
+                    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:18px;">
+                        <div style="flex:1;min-width:180px;">
+                            <label style="display:block;font-weight:600;font-size:0.845rem;margin-bottom:5px;">User ID</label>
+                            <input type="text" id="gallery-user-id" placeholder="e.g., user_keshav"
+                                   style="width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:0.875rem;font-family:inherit;">
+                        </div>
+                        <button class="btn" onclick="loadGallery()" style="margin:0;">View Images</button>
+                    </div>
+
+                    <div id="gallery-result"></div>
+
+                    <div id="gallery-wrap" style="display:none;margin-top:4px;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+                            <div>
+                                <h4 style="margin:0 0 8px;font-size:0.875rem;font-weight:600;color:#059669;">Positive <span id="gallery-pos-count" style="font-weight:400;color:#6b7280;"></span></h4>
+                                <div id="gallery-positive" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:5px;max-height:400px;overflow-y:auto;padding:8px;background:#f9fafb;border:1px solid var(--border);border-radius:10px;"></div>
+                            </div>
+                            <div>
+                                <h4 style="margin:0 0 8px;font-size:0.875rem;font-weight:600;color:#dc2626;">Negative <span id="gallery-neg-count" style="font-weight:400;color:#6b7280;"></span></h4>
+                                <div id="gallery-negative" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:5px;max-height:400px;overflow-y:auto;padding:8px;background:#f9fafb;border:1px solid var(--border);border-radius:10px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
+
+        </div><!-- /content -->
+    </div><!-- /main -->
 
     <script>
-        // Same host/port as this page when served by uvicorn. If you open index.html as a file, we fall back to localhost.
         const API_BASE =
             window.location.protocol === "file:"
                 ? "http://127.0.0.1:8000/api"
                 : "/api";
 
+        const TAB_TITLES = {
+            enroll: 'Enroll Face',
+            recognize: 'Recognize Face',
+            manage: 'Manage',
+            collect: 'Collect Data',
+            train: 'Train Model',
+            consent: 'Consent',
+            extract: 'Debug'
+        };
+
         function formatApiDetail(detail) {
             if (detail == null || detail === '') return '';
             if (typeof detail === 'string') return detail;
-            if (Array.isArray(detail)) {
-                return detail.map((e) => (e && e.msg) ? e.msg : JSON.stringify(e)).join('; ');
-            }
+            if (Array.isArray(detail)) return detail.map(e => (e && e.msg) ? e.msg : JSON.stringify(e)).join('; ');
             return String(detail);
         }
 
@@ -850,68 +856,47 @@
         }
 
         function switchTab(tabName, btn) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.tab').forEach(b => {
-                b.classList.remove('active');
-            });
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
 
             document.getElementById(tabName).classList.add('active');
-            if (btn && btn.classList) {
-                btn.classList.add('active');
-            }
+            if (btn && btn.classList) btn.classList.add('active');
 
-            // Refresh stats when collect tab is opened
-            if (tabName === 'collect') {
-                refreshStats();
-            }
+            const titleEl = document.getElementById('page-title');
+            if (titleEl) titleEl.textContent = TAB_TITLES[tabName] || tabName;
 
-            // Load embeddings when manage tab is opened
-            if (tabName === 'manage') {
-                loadEmbeddings();
-            }
+            if (tabName === 'collect') refreshStats();
+            if (tabName === 'manage') loadEmbeddings();
 
-            // Check training status when train tab is opened
             if (tabName === 'train') {
                 fetch(`${API_BASE}/training-status`)
-                    .then(res => res.json())
+                    .then(r => r.json())
                     .then(status => {
                         if (status.is_training) {
                             document.getElementById('train-progress').style.display = 'block';
                             document.getElementById('train-loading').style.display = 'block';
                             document.getElementById('train-btn').disabled = true;
-                            document.getElementById('train-stop-btn').style.display = 'inline-block';
+                            document.getElementById('train-stop-btn').style.display = 'inline-flex';
                             startStatusPolling();
                         }
                         updateTrainingStatus(status);
                     })
-                    .catch(err => console.error('Error checking training status:', err));
+                    .catch(() => {});
             }
         }
 
-        function handleDragOver(e) {
-            e.preventDefault();
-            e.currentTarget.classList.add('dragover');
-        }
-
-        function handleDragLeave(e) {
-            e.currentTarget.classList.remove('dragover');
-        }
+        function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('dragover'); }
+        function handleDragLeave(e) { e.currentTarget.classList.remove('dragover'); }
 
         function handleDrop(e, type) {
             e.preventDefault();
             e.currentTarget.classList.remove('dragover');
             const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                handleFile(files[0], type);
-            }
+            if (files.length > 0) handleFile(files[0], type);
         }
 
         function handleFileSelect(e, type) {
-            if (e.target.files.length > 0) {
-                handleFile(e.target.files[0], type);
-            }
+            if (e.target.files.length > 0) handleFile(e.target.files[0], type);
         }
 
         function handleFile(file, type) {
@@ -919,12 +904,9 @@
                 showResult(type, 'Please select an image file.', 'error');
                 return;
             }
-
             const reader = new FileReader();
-            reader.onload = (e) => {
-                const preview = document.getElementById(`${type}-preview`);
-                preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
-                
+            reader.onload = e => {
+                document.getElementById(`${type}-preview`).innerHTML = `<img src="${e.target.result}" alt="Preview">`;
                 const btn = document.getElementById(`${type}-btn`);
                 btn.disabled = false;
                 btn.dataset.file = file;
@@ -937,101 +919,60 @@
             const fileInput = document.getElementById('enroll-file');
             const fileToUse = fileInput.files[0] || enrollCapturedBlob;
 
-            if (!userId) {
-                showResult('enroll', 'Please enter a User ID.', 'error');
-                return;
-            }
-
-            if (!fileToUse) {
-                showResult('enroll', 'Please select an image or capture one from the camera.', 'error');
-                return;
-            }
+            if (!userId) { showResult('enroll', 'Please enter a User ID.', 'error'); return; }
+            if (!fileToUse) { showResult('enroll', 'Please select an image or capture one from the camera.', 'error'); return; }
 
             showLoading('enroll', true);
             clearResult('enroll');
 
-            // First, give consent for this user
             try {
-                const consentResponse = await fetch(`${API_BASE}/consent`, {
+                const consentRes = await fetch(`${API_BASE}/consent`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        consent_version: 'v1.0'
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, consent_version: 'v1.0' })
                 });
-                
-                if (!consentResponse.ok) {
-                    const errorData = await consentResponse.json().catch(() => ({}));
-                    showResult('enroll', 
-                        `❌ Error: Could not set consent. ${formatApiDetail(errorData.detail) || 'Please try again.'}`, 
-                        'error');
+                if (!consentRes.ok) {
+                    const err = await consentRes.json().catch(() => ({}));
+                    showResult('enroll', `❌ Could not set consent. ${formatApiDetail(err.detail) || 'Please try again.'}`, 'error');
                     showLoading('enroll', false);
                     return;
                 }
             } catch (error) {
-                showResult('enroll', 
-                    `❌ Error: Cannot connect to server. Make sure the server is running at ${API_BASE}`, 
-                    'error');
+                showResult('enroll', `❌ Cannot connect to server at ${API_BASE}`, 'error');
                 showLoading('enroll', false);
                 return;
             }
 
-            // Now enroll the face
             const formData = new FormData();
-            if (fileInput.files[0]) {
-                formData.append('file', fileInput.files[0]);
-            } else {
-                formData.append('file', enrollCapturedBlob, 'capture.jpg');
-            }
+            if (fileInput.files[0]) formData.append('file', fileInput.files[0]);
+            else formData.append('file', enrollCapturedBlob, 'capture.jpg');
 
             try {
                 const response = await fetch(`${API_BASE}/enroll-face?user_id=${encodeURIComponent(userId)}`, {
-                    method: 'POST',
-                    body: formData
+                    method: 'POST', body: formData
                 });
 
                 if (!response.ok) {
-                    let errorMsg = `HTTP ${response.status}: `;
-                    try {
-                        const errorData = await response.json();
-                        errorMsg += formatApiDetail(errorData.detail) || 'Unknown error';
-                    } catch {
-                        errorMsg += response.statusText || 'Failed to enroll face';
-                    }
-                    if (response.status === 403) {
-                        errorMsg += ' (Enrollment requires consent; try again or use the Consent tab.)';
-                    }
-                    showResult('enroll', `❌ Error: ${errorMsg}`, 'error');
+                    let msg = `HTTP ${response.status}: `;
+                    try { const d = await response.json(); msg += formatApiDetail(d.detail) || 'Unknown error'; }
+                    catch { msg += response.statusText; }
+                    if (response.status === 403) msg += ' (Consent required — use the Consent tab.)';
+                    showResult('enroll', `❌ Error: ${msg}`, 'error');
                     return;
                 }
 
                 const data = await response.json();
-                const safeId = (typeof data.user_id === 'string')
-                    ? data.user_id.replace(/</g, '&lt;').replace(/>/g, '&gt;')
-                    : data.user_id;
-                showResult(
-                    'enroll',
+                const safeId = String(data.user_id).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                showResult('enroll',
                     `<h3>✅ Successfully enrolled: <code>${safeId}</code></h3>
-                    <p style="margin:12px 0 0 0;color:#333;">Status: <strong>${data.status || 'accepted'}</strong></p>
-                    <p style="margin:14px 0 0 0;font-size:0.95em;color:#555;"><strong>Verify enrollment:</strong> use Manage (list) or <code>GET /api/embeddings</code> in <a href="/docs" target="_blank" rel="noopener">API docs</a>.</p>
-                    <p style="margin:12px 0 0 0;">
-                        <button type="button" class="btn" onclick="openManageToVerifyEnrollment()" style="margin:0;">Verify — open Manage Embeddings</button>
+                    <p style="margin:10px 0 0;color:#333;">Status: <strong>${data.status || 'accepted'}</strong></p>
+                    <p style="margin:12px 0 0;">
+                        <button type="button" class="btn" onclick="openManageToVerifyEnrollment()" style="margin:0;">Verify — open Manage</button>
                     </p>`,
-                    'success',
-                    true
+                    'success', true
                 );
             } catch (error) {
-                // Better error handling for network errors
-                if (error.message.includes('Failed to fetch') || error.message.includes('Load failed')) {
-                    showResult('enroll', 
-                        `❌ Error: Cannot connect to server. Make sure the server is running at ${API_BASE}`, 
-                        'error');
-                } else {
-                    showResult('enroll', `❌ Error: ${error.message}`, 'error');
-                }
+                showResult('enroll', `❌ Error: ${connError(error)}`, 'error');
             } finally {
                 showLoading('enroll', false);
             }
@@ -1040,18 +981,11 @@
         async function recognizeFace() {
             const fileInput = document.getElementById('recognize-file');
             const fileToUse = fileInput.files[0] || recognizeCapturedBlob;
-
-            if (!fileToUse) {
-                showResult('recognize', 'Please select an image or capture one from the camera.', 'error');
-                return;
-            }
+            if (!fileToUse) { showResult('recognize', 'Please select an image or capture one from the camera.', 'error'); return; }
 
             const formData = new FormData();
-            if (fileInput.files[0]) {
-                formData.append('file', fileInput.files[0]);
-            } else {
-                formData.append('file', recognizeCapturedBlob, 'capture.jpg');
-            }
+            if (fileInput.files[0]) formData.append('file', fileInput.files[0]);
+            else formData.append('file', recognizeCapturedBlob, 'capture.jpg');
             formData.append('top_k', '5');
             formData.append('device_id', 'web_ui');
 
@@ -1059,32 +993,24 @@
             clearResult('recognize');
 
             try {
-                const startTime = performance.now();
+                const t0 = performance.now();
                 const response = await fetch(`${API_BASE}/recognize-face?top_k=5&device_id=web_ui`, {
-                    method: 'POST',
-                    body: formData
+                    method: 'POST', body: formData
                 });
-
                 const data = await response.json();
-                const endTime = performance.now();
-                const inferenceTime = (endTime - startTime).toFixed(0);
+                const ms = (performance.now() - t0).toFixed(0);
 
                 if (response.ok) {
                     if (data.matches && data.matches.length > 0) {
                         let html = `
-                            <p class="recognize-rank-note"><strong>How to read this:</strong> The app compares your photo to <em>every</em> enrolled user and ranks them by similarity. <strong>#1 is not “who you typed last”—it is whoever in the database matched best.</strong> If you expected <code>user_123</code> but see <code>user_keshav</code>, Keshav’s stored face is closer to this image; use <strong>Manage Embeddings</strong> to remove test users or enroll again with a clearer photo.</p>
-                            <h3>Recognition results (${inferenceTime}ms)</h3>
-                            <p class="recognize-rank-note">Top matches (best → worst, up to ${data.matches.length}):</p>`;
-                        data.matches.forEach((match, index) => {
-                            const percentage = (match.score * 100).toFixed(1);
+                            <p class="recognize-rank-note"><strong>How to read this:</strong> Results are ranked by similarity. #1 is whoever in the database matched best — not necessarily the last person you enrolled.</p>
+                            <h3>Results (${ms}ms)</h3>`;
+                        data.matches.forEach((m, i) => {
                             html += `
                                 <div class="match-item">
-                                    <div>
-                                        <strong>#${index + 1}</strong> User: ${match.user_id}
-                                    </div>
-                                    <div class="match-score">${percentage}% similarity</div>
-                                </div>
-                            `;
+                                    <div><strong>#${i+1}</strong> ${m.user_id}</div>
+                                    <div class="match-score">${(m.score*100).toFixed(1)}%</div>
+                                </div>`;
                         });
                         showResult('recognize', html, 'success', true);
                     } else {
@@ -1102,11 +1028,7 @@
 
         async function extractEmbedding() {
             const fileInput = document.getElementById('extract-file');
-            
-            if (!fileInput.files[0]) {
-                showResult('extract', 'Please select an image.', 'error');
-                return;
-            }
+            if (!fileInput.files[0]) { showResult('extract', 'Please select an image.', 'error'); return; }
 
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
@@ -1115,24 +1037,19 @@
             clearResult('extract');
 
             try {
-                const startTime = performance.now();
-                const response = await fetch(`${API_BASE}/extract-face-embedding`, {
-                    method: 'POST',
-                    body: formData
-                });
-
+                const t0 = performance.now();
+                const response = await fetch(`${API_BASE}/extract-face-embedding`, { method: 'POST', body: formData });
                 const data = await response.json();
-                const endTime = performance.now();
-                const inferenceTime = (endTime - startTime).toFixed(0);
+                const ms = (performance.now() - t0).toFixed(0);
 
                 if (response.ok) {
-                    const embeddingPreview = data.embedding.slice(0, 10).join(', ') + '...';
-                    showResult('extract', 
-                        `✅ Embedding extracted successfully!<br>
+                    const preview = data.embedding.slice(0, 10).join(', ') + '...';
+                    showResult('extract',
+                        `✅ Embedding extracted!<br>
                         <strong>Dimension:</strong> ${data.dimension}<br>
                         <strong>Model:</strong> ${data.model}<br>
-                        <strong>Inference Time:</strong> ${inferenceTime}ms<br>
-                        <strong>Preview (first 10 values):</strong> [${embeddingPreview}]`, 
+                        <strong>Inference:</strong> ${ms}ms<br>
+                        <strong>Preview (first 10):</strong> [${preview}]`,
                         'success');
                 } else {
                     showResult('extract', `❌ Error: ${formatApiDetail(data.detail) || response.statusText}`, 'error');
@@ -1145,39 +1062,29 @@
         }
 
         function showLoading(type, show) {
-            const loading = document.getElementById(`${type}-loading`);
-            if (show) {
-                loading.classList.add('active');
-            } else {
-                loading.classList.remove('active');
-            }
+            const el = document.getElementById(`${type}-loading`);
+            el.classList.toggle('active', show);
         }
 
         function showResult(type, message, className, asHtml) {
-            const result = document.getElementById(`${type}-result`);
-            if (asHtml) {
-                result.innerHTML = message;
-            } else {
-                result.innerHTML = `<h3>${message}</h3>`;
-            }
-            result.className = `result ${className}`;
+            const el = document.getElementById(`${type}-result`);
+            if (asHtml) el.innerHTML = message;
+            else el.innerHTML = `<h3>${message}</h3>`;
+            el.className = `result ${className}`;
         }
 
         function clearResult(type) {
-            const result = document.getElementById(`${type}-result`);
-            result.innerHTML = '';
-            result.className = 'result';
+            const el = document.getElementById(`${type}-result`);
+            el.innerHTML = '';
+            el.className = 'result';
         }
 
         let trainingStatusInterval = null;
 
         async function startTraining() {
             const userId = document.getElementById('train-user-id').value;
-            if (!userId) {
-                showResult('train', 'Please enter a User ID', 'error');
-                return;
-            }
-            
+            if (!userId) { showResult('train', 'Please enter a User ID', 'error'); return; }
+
             const epochs = parseInt(document.getElementById('train-epochs').value) || 50;
             const batchSize = parseInt(document.getElementById('train-batch-size').value) || 16;
             const dataDir = document.getElementById('train-data-dir').value || 'data';
@@ -1185,28 +1092,18 @@
             document.getElementById('train-btn').disabled = true;
             document.getElementById('train-loading').style.display = 'block';
             document.getElementById('train-progress').style.display = 'block';
-            document.getElementById('train-stop-btn').style.display = 'inline-block';
+            document.getElementById('train-stop-btn').style.display = 'inline-flex';
             clearResult('train');
 
             try {
                 const response = await fetch(`${API_BASE}/train-model`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        epochs: epochs,
-                        batch_size: batchSize,
-                        data_dir: dataDir
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, epochs, batch_size: batchSize, data_dir: dataDir })
                 });
-
                 const data = await response.json();
-
                 if (response.ok) {
                     showResult('train', `✅ ${data.message}`, 'success');
-                    // Start polling for status
                     startStatusPolling();
                 } else {
                     showResult('train', `❌ Error: ${formatApiDetail(data.detail) || response.statusText}`, 'error');
@@ -1219,17 +1116,12 @@
         }
 
         function startStatusPolling() {
-            if (trainingStatusInterval) {
-                clearInterval(trainingStatusInterval);
-            }
-
+            if (trainingStatusInterval) clearInterval(trainingStatusInterval);
             trainingStatusInterval = setInterval(async () => {
                 try {
-                    const response = await fetch(`${API_BASE}/training-status`);
-                    const status = await response.json();
-
+                    const res = await fetch(`${API_BASE}/training-status`);
+                    const status = await res.json();
                     updateTrainingStatus(status);
-
                     if (!status.is_training && status.error) {
                         showResult('train', `❌ Training failed: ${status.error}`, 'error');
                         clearInterval(trainingStatusInterval);
@@ -1239,10 +1131,8 @@
                         clearInterval(trainingStatusInterval);
                         resetTrainingUI();
                     }
-                } catch (error) {
-                    console.error('Error polling training status:', error);
-                }
-            }, 1000); // Poll every second
+                } catch {}
+            }, 1000);
         }
 
         function updateTrainingStatus(status) {
@@ -1256,10 +1146,8 @@
 
         async function stopTraining() {
             try {
-                const response = await fetch(`${API_BASE}/stop-training`, {
-                    method: 'POST'
-                });
-                const data = await response.json();
+                const res = await fetch(`${API_BASE}/stop-training`, { method: 'POST' });
+                const data = await res.json();
                 showResult('train', `ℹ️ ${data.message}`, 'info');
             } catch (error) {
                 showResult('train', `❌ Error: ${connError(error)}`, 'error');
@@ -1270,43 +1158,108 @@
             document.getElementById('train-btn').disabled = false;
             document.getElementById('train-loading').style.display = 'none';
             document.getElementById('train-stop-btn').style.display = 'none';
-            if (trainingStatusInterval) {
-                clearInterval(trainingStatusInterval);
-                trainingStatusInterval = null;
-            }
+            if (trainingStatusInterval) { clearInterval(trainingStatusInterval); trainingStatusInterval = null; }
         }
 
-        // Data Collection Functions
-        let stream = null;
-        let video = null;
-        let canvas = null;
+        // ── MediaPipe Face Mesh ────────────────────────────────────────────────
+        let faceMeshInstance = null;
+        let activeMeshCallback = null;
 
-        // ── Enroll tab camera ──────────────────────────────────────────────────
-        let enrollStream = null;
-        let enrollCapturedBlob = null;
+        async function initFaceMesh() {
+            if (faceMeshInstance) return faceMeshInstance;
+            faceMeshInstance = new FaceMesh({
+                locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/${f}`
+            });
+            faceMeshInstance.setOptions({
+                maxNumFaces: 1,
+                refineLandmarks: false,
+                minDetectionConfidence: 0.5,
+                minTrackingConfidence: 0.5
+            });
+            faceMeshInstance.onResults(results => {
+                if (activeMeshCallback) activeMeshCallback(results);
+            });
+            await faceMeshInstance.initialize();
+            return faceMeshInstance;
+        }
+
+        function drawFaceMesh(overlayCanvas, videoEl, results) {
+            overlayCanvas.width  = videoEl.videoWidth;
+            overlayCanvas.height = videoEl.videoHeight;
+            const ctx = overlayCanvas.getContext('2d');
+            ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+            if (!results?.multiFaceLandmarks?.length) return false;
+            const lm = results.multiFaceLandmarks[0];
+            drawConnectors(ctx, lm, FACEMESH_TESSELATION,  { color: 'rgba(99,102,241,0.12)', lineWidth: 0.5 });
+            drawConnectors(ctx, lm, FACEMESH_FACE_OVAL,    { color: 'rgba(99,102,241,0.85)', lineWidth: 2 });
+            drawConnectors(ctx, lm, FACEMESH_LEFT_EYE,     { color: '#6366f1', lineWidth: 1.6 });
+            drawConnectors(ctx, lm, FACEMESH_RIGHT_EYE,    { color: '#6366f1', lineWidth: 1.6 });
+            drawConnectors(ctx, lm, FACEMESH_LEFT_EYEBROW, { color: '#818cf8', lineWidth: 1.4 });
+            drawConnectors(ctx, lm, FACEMESH_RIGHT_EYEBROW,{ color: '#818cf8', lineWidth: 1.4 });
+            drawConnectors(ctx, lm, FACEMESH_LIPS,         { color: '#a5b4fc', lineWidth: 1.4 });
+            return true;
+        }
+
+        function startDetectionLoop(videoEl, overlayCanvas, statusEl, captureBtn) {
+            let running = true, processing = false;
+            activeMeshCallback = results => {
+                const found = drawFaceMesh(overlayCanvas, videoEl, results);
+                statusEl.textContent = found ? '✓ Face detected — ready to capture' : 'Position your face in frame';
+                statusEl.style.color  = found ? '#059669' : '#6b7280';
+                if (captureBtn) captureBtn.disabled = !found;
+                processing = false;
+            };
+            async function tick() {
+                if (!running) return;
+                if (!processing && videoEl.readyState >= 2 && faceMeshInstance) {
+                    processing = true;
+                    try { await faceMeshInstance.send({ image: videoEl }); }
+                    catch (_) { processing = false; }
+                }
+                requestAnimationFrame(tick);
+            }
+            tick();
+            return () => { running = false; activeMeshCallback = null; };
+        }
+
+        window.addEventListener('load', () => initFaceMesh().catch(() => {}));
+
+        // ── Enroll camera ──────────────────────────────────────────────────────
+        let enrollStream = null, enrollCapturedBlob = null, stopEnrollDetection = null;
 
         async function toggleEnrollCamera() {
             const container = document.getElementById('enroll-camera-container');
             const uploadArea = document.getElementById('enroll-upload');
-            const toggleBtn = document.getElementById('enroll-camera-toggle-btn');
+            const toggleBtn  = document.getElementById('enroll-camera-toggle-btn');
 
             if (enrollStream) {
+                if (stopEnrollDetection) { stopEnrollDetection(); stopEnrollDetection = null; }
                 enrollStream.getTracks().forEach(t => t.stop());
                 enrollStream = null;
                 container.style.display = 'none';
                 uploadArea.style.display = 'block';
                 toggleBtn.textContent = '📹 Use Camera Instead';
-                toggleBtn.style.background = '#4caf50';
+                toggleBtn.style.background = '#059669';
             } else {
                 try {
                     enrollStream = await navigator.mediaDevices.getUserMedia({
                         video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }
                     });
-                    document.getElementById('enroll-video').srcObject = enrollStream;
+                    const videoEl = document.getElementById('enroll-video');
+                    videoEl.srcObject = enrollStream;
                     container.style.display = 'block';
                     uploadArea.style.display = 'none';
                     toggleBtn.textContent = '⏹ Stop Camera';
                     toggleBtn.style.background = '#dc3545';
+                    videoEl.onloadedmetadata = async () => {
+                        await initFaceMesh().catch(() => {});
+                        stopEnrollDetection = startDetectionLoop(
+                            videoEl,
+                            document.getElementById('enroll-detect-canvas'),
+                            document.getElementById('enroll-face-status'),
+                            document.getElementById('enroll-capture-btn')
+                        );
+                    };
                 } catch (e) {
                     showResult('enroll', `❌ Camera error: ${e.message}`, 'error');
                 }
@@ -1323,39 +1276,48 @@
                 enrollCapturedBlob = blob;
                 const url = URL.createObjectURL(blob);
                 document.getElementById('enroll-capture-preview').innerHTML = `
-                    <img src="${url}" style="max-width: 300px; border-radius: 10px; border: 3px solid #4caf50;">
-                    <p style="color: #4caf50; margin-top: 8px;">✅ Frame captured — click "Enroll Face" to proceed.</p>
-                `;
+                    <img src="${url}" style="max-width:280px;border-radius:10px;border:3px solid #059669;">
+                    <p style="color:#059669;margin-top:8px;font-size:0.855rem;">✅ Captured — click "Enroll Face" to proceed.</p>`;
                 document.getElementById('enroll-btn').disabled = false;
             }, 'image/jpeg', 0.9);
         }
 
-        // ── Recognize tab camera ───────────────────────────────────────────────
-        let recognizeStream = null;
-        let recognizeCapturedBlob = null;
+        // ── Recognize camera ───────────────────────────────────────────────────
+        let recognizeStream = null, recognizeCapturedBlob = null, stopRecognizeDetection = null;
 
         async function toggleRecognizeCamera() {
             const container = document.getElementById('recognize-camera-container');
             const uploadArea = document.getElementById('recognize-upload');
-            const toggleBtn = document.getElementById('recognize-camera-toggle-btn');
+            const toggleBtn  = document.getElementById('recognize-camera-toggle-btn');
 
             if (recognizeStream) {
+                if (stopRecognizeDetection) { stopRecognizeDetection(); stopRecognizeDetection = null; }
                 recognizeStream.getTracks().forEach(t => t.stop());
                 recognizeStream = null;
                 container.style.display = 'none';
                 uploadArea.style.display = 'block';
                 toggleBtn.textContent = '📹 Use Camera Instead';
-                toggleBtn.style.background = '#4caf50';
+                toggleBtn.style.background = '#059669';
             } else {
                 try {
                     recognizeStream = await navigator.mediaDevices.getUserMedia({
                         video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }
                     });
-                    document.getElementById('recognize-video').srcObject = recognizeStream;
+                    const videoEl = document.getElementById('recognize-video');
+                    videoEl.srcObject = recognizeStream;
                     container.style.display = 'block';
                     uploadArea.style.display = 'none';
                     toggleBtn.textContent = '⏹ Stop Camera';
                     toggleBtn.style.background = '#dc3545';
+                    videoEl.onloadedmetadata = async () => {
+                        await initFaceMesh().catch(() => {});
+                        stopRecognizeDetection = startDetectionLoop(
+                            videoEl,
+                            document.getElementById('recognize-detect-canvas'),
+                            document.getElementById('recognize-face-status'),
+                            document.getElementById('recognize-capture-btn')
+                        );
+                    };
                 } catch (e) {
                     showResult('recognize', `❌ Camera error: ${e.message}`, 'error');
                 }
@@ -1372,183 +1334,127 @@
                 recognizeCapturedBlob = blob;
                 const url = URL.createObjectURL(blob);
                 document.getElementById('recognize-capture-preview').innerHTML = `
-                    <img src="${url}" style="max-width: 300px; border-radius: 10px; border: 3px solid #ff9800;">
-                    <p style="color: #ff9800; margin-top: 8px;">✅ Frame captured — click "Recognize Face" to proceed.</p>
-                `;
+                    <img src="${url}" style="max-width:280px;border-radius:10px;border:3px solid #f59e0b;">
+                    <p style="color:#d97706;margin-top:8px;font-size:0.855rem;">✅ Captured — click "Recognize Face" to proceed.</p>`;
                 document.getElementById('recognize-btn').disabled = false;
             }, 'image/jpeg', 0.9);
         }
 
-        // ── Collect Data tab camera ────────────────────────────────────────────
+        // ── Collect Data camera ────────────────────────────────────────────────
+        let stream = null, video = null, canvas = null;
+        let stopCollectDetection = null, lastFaceLandmarks = null;
+
         async function startCamera() {
             try {
                 video = document.getElementById('video');
                 canvas = document.getElementById('canvas');
-                
-                // Check if getUserMedia is available
+
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    showResult('collect', '❌ Camera access not available. Please use a modern browser (Chrome, Firefox, Safari, Edge).', 'error');
+                    showResult('collect', '❌ Camera access not available.', 'error');
                     return;
                 }
-                
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        width: { ideal: 640 },
-                        height: { ideal: 480 },
-                        facingMode: 'user' 
-                    } 
+
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }
                 });
-                
                 video.srcObject = stream;
                 document.getElementById('camera-container').style.display = 'block';
                 document.getElementById('start-camera-btn').style.display = 'none';
-                document.getElementById('stop-camera-btn').style.display = 'inline-block';
-                
-                showResult('collect', '✅ Camera started! Position your face and click capture buttons.', 'success');
+                document.getElementById('stop-camera-btn').style.display = 'inline-flex';
+
+                video.onloadedmetadata = async () => {
+                    await initFaceMesh().catch(() => {});
+                    const overlayCanvas = document.getElementById('collect-detect-canvas');
+                    const statusEl = document.getElementById('collect-face-status');
+                    const posBtn = document.getElementById('capture-positive-btn');
+                    const negBtn = document.getElementById('capture-negative-btn');
+
+                    stopCollectDetection = startDetectionLoop(video, overlayCanvas, statusEl, null);
+
+                    const origCallback = activeMeshCallback;
+                    activeMeshCallback = results => {
+                        origCallback(results);
+                        const found = results?.multiFaceLandmarks?.length > 0;
+                        lastFaceLandmarks = found ? results.multiFaceLandmarks[0] : null;
+                        posBtn.disabled = !found;
+                        negBtn.disabled = !found;
+                    };
+                };
+                showResult('collect', '✅ Camera started! Face detection active — buttons enable when face is detected.', 'success');
             } catch (error) {
-                let errorMessage = `❌ Error accessing camera: ${error.message}`;
-                
-                if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-                    errorMessage = `❌ Camera permission denied. Please:\n\n` +
-                        `1. Click the camera icon in your browser's address bar\n` +
-                        `2. Allow camera access for this site\n` +
-                        `3. On macOS: System Settings → Privacy & Security → Camera → Enable for your browser\n` +
-                        `4. Refresh the page and try again`;
-                } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
-                    errorMessage = `❌ No camera found. Please connect a camera and try again.`;
-                } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
-                    errorMessage = `❌ Camera is being used by another application. Please close other apps using the camera and try again.`;
-                }
-                
-                showResult('collect', errorMessage, 'error');
+                let msg = `❌ Error: ${error.message}`;
+                if (error.name === 'NotAllowedError') msg = '❌ Camera permission denied. Allow camera access then refresh.';
+                else if (error.name === 'NotFoundError') msg = '❌ No camera found.';
+                showResult('collect', msg, 'error');
             }
         }
 
         function stopCamera() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
-            if (video) {
-                video.srcObject = null;
-            }
+            if (stopCollectDetection) { stopCollectDetection(); stopCollectDetection = null; }
+            lastFaceLandmarks = null;
+            if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+            if (video) video.srcObject = null;
             document.getElementById('camera-container').style.display = 'none';
-            document.getElementById('start-camera-btn').style.display = 'inline-block';
+            document.getElementById('start-camera-btn').style.display = 'inline-flex';
             document.getElementById('stop-camera-btn').style.display = 'none';
             document.getElementById('capture-preview').innerHTML = '';
+            document.getElementById('capture-positive-btn').disabled = true;
+            document.getElementById('capture-negative-btn').disabled = true;
         }
 
         async function captureImage(category) {
             const userId = document.getElementById('collect-user-id').value;
-            if (!userId) {
-                showResult('collect', '❌ Please enter a User ID first!', 'error');
-                return;
-            }
-            
-            if (!video || !canvas) {
-                showResult('collect', '❌ Please start the camera first!', 'error');
-                return;
-            }
+            if (!userId) { showResult('collect', '❌ Please enter a User ID first!', 'error'); return; }
+            if (!video || !canvas) { showResult('collect', '❌ Please start the camera first!', 'error'); return; }
 
             try {
-                // Set canvas dimensions to match video
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                
-                // Draw video frame to canvas
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                
-                // Convert to base64
-                const imageData = canvas.toDataURL('image/jpeg', 0.8);
-                
-                // Show preview
+                const vw = video.videoWidth, vh = video.videoHeight;
+
+                if (lastFaceLandmarks && lastFaceLandmarks.length > 0) {
+                    let minX = 1, minY = 1, maxX = 0, maxY = 0;
+                    for (const pt of lastFaceLandmarks) {
+                        if (pt.x < minX) minX = pt.x;
+                        if (pt.y < minY) minY = pt.y;
+                        if (pt.x > maxX) maxX = pt.x;
+                        if (pt.y > maxY) maxY = pt.y;
+                    }
+                    const pad = 0.20;
+                    const bw = maxX - minX, bh = maxY - minY;
+                    const x = Math.max(0, (minX - pad*bw) * vw);
+                    const y = Math.max(0, (minY - pad*bh) * vh);
+                    const w = Math.min(vw - x, (bw + 2*pad*bw) * vw);
+                    const h = Math.min(vh - y, (bh + 2*pad*bh) * vh);
+                    canvas.width  = Math.round(w);
+                    canvas.height = Math.round(h);
+                    canvas.getContext('2d').drawImage(video, x, y, w, h, 0, 0, canvas.width, canvas.height);
+                } else {
+                    canvas.width = vw; canvas.height = vh;
+                    canvas.getContext('2d').drawImage(video, 0, 0, vw, vh);
+                }
+
+                const imageData = canvas.toDataURL('image/jpeg', 0.92);
+
                 const preview = document.getElementById('capture-preview');
                 preview.innerHTML = `
-                    <div style="display: inline-block; border: 3px solid #667eea; border-radius: 10px; padding: 10px; background: white;">
-                        <img src="${imageData}" style="max-width: 300px; border-radius: 5px;" alt="Captured">
-                        <p style="margin-top: 10px; color: #666;">Saving as ${category}...</p>
-                    </div>
-                `;
-                
-                // Send to server
+                    <div style="display:inline-block;border:3px solid #6366f1;border-radius:10px;padding:8px;background:white;">
+                        <img src="${imageData}" style="max-width:260px;border-radius:6px;" alt="Captured">
+                        <p style="margin-top:8px;font-size:0.8rem;color:#6b7280;">Saving as ${category}...</p>
+                    </div>`;
+
                 const response = await fetch(`${API_BASE}/save-training-image`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        image_data: imageData,
-                        category: category,
-                        user_id: userId
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image_data: imageData, category, user_id: userId })
                 });
-
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Flash effect
-                    const flashColor = category === 'positive' ? '#2196f3' : '#ff9800';
+                    const flashColor = category === 'positive' ? '#2196f3' : '#f59e0b';
                     preview.style.backgroundColor = flashColor;
-                    setTimeout(() => {
-                        preview.style.backgroundColor = 'transparent';
-                    }, 200);
-                    
-                    showResult('collect', `✅ ${category.charAt(0).toUpperCase() + category.slice(1)} image saved! (${data.filename})`, 'success');
+                    setTimeout(() => { preview.style.backgroundColor = 'transparent'; }, 200);
+                    showResult('collect', `✅ ${category} image saved! (${data.filename})`, 'success');
                     refreshStats();
-                    
-                    // Clear preview after 2 seconds
-                    setTimeout(() => {
-                        preview.innerHTML = '';
-                    }, 2000);
-                } else {
-                    showResult('collect', `❌ Error: ${formatApiDetail(data.detail) || response.statusText}`, 'error');
-                }
-            } catch (error) {
-                showResult('collect', `❌ Error capturing image: ${connError(error)}`, 'error');
-            }
-        }
-
-        async function refreshStats() {
-            const userId = document.getElementById('collect-user-id').value;
-            if (!userId) {
-                // Don't show error, just reset counts
-                document.getElementById('positive-count').textContent = '0';
-                document.getElementById('negative-count').textContent = '0';
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE}/training-data-stats?user_id=${userId}`);
-                const stats = await response.json();
-                
-                document.getElementById('positive-count').textContent = stats.positive || 0;
-                document.getElementById('negative-count').textContent = stats.negative || 0;
-            } catch (error) {
-                console.error('Error refreshing stats:', error);
-            }
-        }
-
-        async function clearCategory(category) {
-            const userId = document.getElementById('collect-user-id').value;
-            if (!userId) {
-                showResult('collect', '❌ Please enter a User ID first!', 'error');
-                return;
-            }
-            
-            if (!confirm(`Are you sure you want to delete all ${category} images for ${userId}?`)) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/training-data/${userId}/${category}`, {
-                    method: 'DELETE'
-                });
-                const data = await response.json();
-
-                if (response.ok) {
-                    showResult('collect', `✅ ${data.message}`, 'success');
-                    refreshStats();
+                    setTimeout(() => { preview.innerHTML = ''; }, 2000);
                 } else {
                     showResult('collect', `❌ Error: ${formatApiDetail(data.detail) || response.statusText}`, 'error');
                 }
@@ -1557,167 +1463,226 @@
             }
         }
 
-        // Manage Embeddings Functions
-        async function loadEmbeddings() {
+        async function refreshStats() {
+            const userId = document.getElementById('collect-user-id').value;
+            if (!userId) {
+                document.getElementById('positive-count').textContent = '0';
+                document.getElementById('negative-count').textContent = '0';
+                return;
+            }
             try {
-                const response = await fetch(`${API_BASE}/embeddings`);
-                const embeddings = await response.json();
-                
-                const listDiv = document.getElementById('embeddings-list');
-                clearResult('manage');
-                
-                if (embeddings.length === 0) {
-                    listDiv.innerHTML = `
-                        <div style="text-align: center; color: #666; padding: 40px;">
-                            <p>No enrolled users found</p>
-                        </div>
-                    `;
+                const res = await fetch(`${API_BASE}/training-data-stats?user_id=${userId}`);
+                const stats = await res.json();
+                document.getElementById('positive-count').textContent = stats.positive || 0;
+                document.getElementById('negative-count').textContent = stats.negative || 0;
+            } catch {}
+        }
+
+        async function clearCategory(category) {
+            const userId = document.getElementById('collect-user-id').value;
+            if (!userId) { showResult('collect', '❌ Please enter a User ID first!', 'error'); return; }
+            if (!confirm(`Delete all ${category} images for ${userId}?`)) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/training-data/${userId}/${category}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (res.ok) { showResult('collect', `✅ ${data.message}`, 'success'); refreshStats(); }
+                else showResult('collect', `❌ Error: ${formatApiDetail(data.detail) || res.statusText}`, 'error');
+            } catch (error) {
+                showResult('collect', `❌ Error: ${connError(error)}`, 'error');
+            }
+        }
+
+        // ── Gallery ────────────────────────────────────────────────────────────
+        async function loadGallery() {
+            const userId = (document.getElementById('gallery-user-id').value || '').trim();
+            const resultEl = document.getElementById('gallery-result');
+            const wrapEl   = document.getElementById('gallery-wrap');
+            if (!userId) {
+                resultEl.innerHTML = '<p style="color:#dc2626;font-size:0.855rem;">Please enter a User ID.</p>';
+                wrapEl.style.display = 'none';
+                return;
+            }
+            resultEl.innerHTML = '<p style="color:#6b7280;font-size:0.855rem;">Loading…</p>';
+            wrapEl.style.display = 'none';
+            try {
+                const res  = await fetch(`${API_BASE}/training-data/${encodeURIComponent(userId)}/gallery`);
+                const data = await res.json();
+                if (!res.ok) { resultEl.innerHTML = `<p style="color:#dc2626;font-size:0.855rem;">${data.detail || res.statusText}</p>`; return; }
+                const pos = data.positive || [], neg = data.negative || [];
+                if (pos.length === 0 && neg.length === 0) {
+                    resultEl.innerHTML = `<p style="color:#6b7280;font-size:0.855rem;">No training images found for <strong>${userId}</strong>.</p>`;
                     return;
                 }
-                
-                let html = '<div style="display: grid; gap: 15px;">';
+                resultEl.innerHTML = '';
+                document.getElementById('gallery-pos-count').textContent = `(${pos.length})`;
+                document.getElementById('gallery-neg-count').textContent = `(${neg.length})`;
+
+                function renderGrid(id, uid, cat, files) {
+                    const el = document.getElementById(id);
+                    if (files.length === 0) { el.innerHTML = '<p style="color:#9ca3af;font-size:0.78rem;padding:12px;text-align:center;">None</p>'; return; }
+                    el.innerHTML = files.map(f => {
+                        const src = `${API_BASE}/training-data/${encodeURIComponent(uid)}/${cat}/${encodeURIComponent(f)}`;
+                        return `<a href="${src}" target="_blank" style="display:block;aspect-ratio:1;border-radius:6px;overflow:hidden;background:#e5e7eb;">
+                            <img src="${src}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.parentElement.style.background='#f3f4f6';this.style.display='none';">
+                        </a>`;
+                    }).join('');
+                }
+                renderGrid('gallery-positive', userId, 'positive', pos);
+                renderGrid('gallery-negative', userId, 'negative', neg);
+                wrapEl.style.display = 'block';
+            } catch (err) {
+                resultEl.innerHTML = `<p style="color:#dc2626;font-size:0.855rem;">${connError(err)}</p>`;
+            }
+        }
+
+        // ── Manage Embeddings ──────────────────────────────────────────────────
+        async function loadEmbeddings() {
+            try {
+                const res = await fetch(`${API_BASE}/embeddings`);
+                const embeddings = await res.json();
+                const listDiv = document.getElementById('embeddings-list');
+                clearResult('manage');
+
+                if (embeddings.length === 0) {
+                    listDiv.innerHTML = '<div style="text-align:center;color:#6b7280;padding:40px;"><p>No enrolled users found</p></div>';
+                    return;
+                }
+
+                let html = '<div style="display:grid;gap:12px;">';
                 for (const emb of embeddings) {
-                    const statusColor = emb.is_active ? '#4caf50' : '#999';
-                    const statusText = emb.is_active ? '✅ Active' : '❌ Inactive';
-                    
+                    const color = emb.is_active ? '#059669' : '#9ca3af';
+                    const status = emb.is_active ? '✅ Active' : '❌ Inactive';
                     html += `
-                        <div style="background: #f5f5f5; padding: 20px; border-radius: 10px; border-left: 4px solid ${statusColor};">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="card" style="border-left:3px solid ${color};padding:16px 18px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
                                 <div>
-                                    <h3 style="margin: 0 0 10px 0;">${emb.user_id}</h3>
-                                    <div style="color: #666; font-size: 0.9em;">
-                                        <div><strong>Status:</strong> <span style="color: ${statusColor};">${statusText}</span></div>
-                                        ${emb.enrolled_at ? `<div><strong>Enrolled:</strong> ${new Date(emb.enrolled_at).toLocaleString()}</div>` : ''}
-                                        ${emb.deactivated_at ? `<div><strong>Deactivated:</strong> ${new Date(emb.deactivated_at).toLocaleString()}</div>` : ''}
+                                    <div style="font-weight:600;font-size:0.9rem;margin-bottom:6px;">${emb.user_id}</div>
+                                    <div style="color:#6b7280;font-size:0.82rem;">
+                                        <span style="color:${color};">${status}</span>
+                                        ${emb.enrolled_at ? ` · Enrolled ${new Date(emb.enrolled_at).toLocaleString()}` : ''}
                                     </div>
                                 </div>
-                                <div>
-                                    <button class="btn" onclick="deleteEmbedding('${emb.user_id}')" style="background: #dc3545;">
-                                        🗑️ Delete
-                                    </button>
-                                </div>
+                                <button class="btn" onclick="deleteEmbedding('${emb.user_id}')" style="background:#dc3545;margin:0;padding:7px 14px;font-size:0.8rem;">🗑 Delete</button>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 }
                 html += '</div>';
                 listDiv.innerHTML = html;
-                
-            } catch (error) {
-                showResult('manage', `❌ Error loading embeddings: ${connError(error)}`, 'error');
-            }
-        }
-        
-        async function deleteEmbedding(userId) {
-            if (!confirm(`Are you sure you want to permanently delete the embedding for ${userId}?\n\nThis action cannot be undone.`)) {
-                return;
-            }
-            
-            clearResult('manage');
-            
-            try {
-                const response = await fetch(`${API_BASE}/embeddings/${userId}`, {
-                    method: 'DELETE'
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showResult('manage', `✅ ${data.message}`, 'success');
-                    // Reload the list
-                    setTimeout(() => loadEmbeddings(), 1000);
-                } else {
-                    showResult('manage', `❌ Error: ${formatApiDetail(data.detail) || 'Failed to delete embedding'}`, 'error');
-                }
             } catch (error) {
                 showResult('manage', `❌ Error: ${connError(error)}`, 'error');
             }
         }
 
-        // Consent Management Functions
-        async function grantConsent() {
-            const userId = document.getElementById('consent-user-id').value;
-            const version = document.getElementById('consent-version').value;
-            
-            if (!userId || !version) {
-                showResult('consent-grant', 'Please fill in all fields', 'error');
-                return;
-            }
-            
-            clearResult('consent-grant');
-            
+        async function deleteEmbedding(userId) {
+            if (!confirm(`Permanently delete the embedding for ${userId}?`)) return;
+            clearResult('manage');
             try {
-                const response = await fetch(`${API_BASE}/consent`, {
+                const res = await fetch(`${API_BASE}/embeddings/${userId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (res.ok) { showResult('manage', `✅ ${data.message}`, 'success'); setTimeout(() => loadEmbeddings(), 1000); }
+                else showResult('manage', `❌ Error: ${formatApiDetail(data.detail) || 'Failed to delete'}`, 'error');
+            } catch (error) {
+                showResult('manage', `❌ Error: ${connError(error)}`, 'error');
+            }
+        }
+
+        // ── Consent ────────────────────────────────────────────────────────────
+        async function grantConsent() {
+            const userId  = document.getElementById('consent-user-id').value;
+            const version = document.getElementById('consent-version').value;
+            if (!userId || !version) { showResult('consent-grant', 'Please fill in all fields', 'error'); return; }
+            clearResult('consent-grant');
+            try {
+                const res = await fetch(`${API_BASE}/consent`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        consent_version: version
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, consent_version: version })
                 });
-                
                 let data;
-                try {
-                    data = await response.json();
-                } catch (e) {
-                    showResult(
-                        'consent-grant',
-                        `❌ Error: Bad response (${response.status}). Is the API running? Open the app via http://127.0.0.1:8000/ or :8001/`,
-                        'error'
-                    );
-                    return;
-                }
-                
-                if (response.ok) {
+                try { data = await res.json(); }
+                catch { showResult('consent-grant', `❌ Bad response (${res.status}). Is the API running?`, 'error'); return; }
+                if (res.ok) {
                     showResult('consent-grant', `✅ Consent granted for ${userId} at ${new Date(data.timestamp).toLocaleString()}`, 'success');
                     document.getElementById('consent-user-id').value = '';
                 } else {
-                    showResult('consent-grant', `❌ Error: ${formatApiDetail(data.detail) || 'Failed to grant consent'}`, 'error');
+                    showResult('consent-grant', `❌ Error: ${formatApiDetail(data.detail) || 'Failed'}`, 'error');
                 }
             } catch (error) {
-                const hint =
-                    window.location.protocol === 'file:'
-                        ? ' Do not open the HTML file directly. Start the server and open http://127.0.0.1:8000/ (or :8001 if port 8000 is busy).'
-                        : ' Check that uvicorn is running and try /docs.';
-                showResult('consent-grant', `❌ Error: ${error.message || 'Request failed'}.${hint}`, 'error');
+                showResult('consent-grant', `❌ Error: ${connError(error)}`, 'error');
             }
         }
-        
+
         async function checkConsent() {
             const userId = document.getElementById('check-consent-user-id').value;
-            
-            if (!userId) {
-                showResult('consent-check', 'Please enter a User ID', 'error');
-                return;
-            }
-            
+            if (!userId) { showResult('consent-check', 'Please enter a User ID', 'error'); return; }
             clearResult('consent-check');
-            
             try {
-                const response = await fetch(`${API_BASE}/consent/${encodeURIComponent(userId)}`);
+                const res = await fetch(`${API_BASE}/consent/${encodeURIComponent(userId)}`);
                 let data;
-                try {
-                    data = await response.json();
-                } catch (e) {
-                    showResult(
-                        'consent-check',
-                        `❌ Error: Bad response (${response.status}). Open the app from the server (not file://).`,
-                        'error'
-                    );
-                    return;
-                }
-                
-                if (data.consent_given) {
-                    showResult('consent-check', `✅ ${userId} has given consent (Date: ${new Date(data.timestamp).toLocaleString()})`, 'success');
-                } else {
+                try { data = await res.json(); }
+                catch { showResult('consent-check', `❌ Bad response (${res.status}).`, 'error'); return; }
+                if (data.consent_given)
+                    showResult('consent-check', `✅ ${userId} has given consent (${new Date(data.timestamp).toLocaleString()})`, 'success');
+                else
                     showResult('consent-check', `❌ ${userId} has NOT given consent`, 'error');
-                }
             } catch (error) {
                 showResult('consent-check', `❌ Error: ${connError(error)}`, 'error');
             }
         }
+
+        async function loadAllConsents() {
+            const el = document.getElementById('all-consents-list');
+            el.innerHTML = '<p style="color:#6b7280;font-size:0.855rem;">Loading…</p>';
+            try {
+                const res  = await fetch(`${API_BASE}/consents`);
+                const rows = await res.json();
+                if (!res.ok) { el.innerHTML = `<p style="color:#dc2626;font-size:0.855rem;">${rows.detail || res.statusText}</p>`; return; }
+                if (rows.length === 0) { el.innerHTML = '<p style="color:#6b7280;font-size:0.855rem;">No consent records found.</p>'; return; }
+                el.innerHTML = `
+                    <table style="width:100%;border-collapse:collapse;font-size:0.845rem;">
+                        <thead>
+                            <tr style="background:#f3f4f6;">
+                                <th style="padding:9px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid var(--border);">User ID</th>
+                                <th style="padding:9px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid var(--border);">Version</th>
+                                <th style="padding:9px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid var(--border);">Granted At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows.map((r, i) => `
+                                <tr style="border-bottom:1px solid var(--border);background:${i%2===0?'#fff':'#f9fafb'};">
+                                    <td style="padding:9px 12px;font-weight:500;">${r.user_id}</td>
+                                    <td style="padding:9px 12px;color:#6b7280;">${r.consent_version || '—'}</td>
+                                    <td style="padding:9px 12px;color:#6b7280;">${r.timestamp ? new Date(r.timestamp).toLocaleString() : '—'}</td>
+                                </tr>`).join('')}
+                        </tbody>
+                    </table>
+                    <p style="color:#9ca3af;font-size:0.78rem;margin-top:8px;">${rows.length} record${rows.length===1?'':'s'}</p>`;
+            } catch (err) {
+                el.innerHTML = `<p style="color:#dc2626;font-size:0.855rem;">${connError(err)}</p>`;
+            }
+        }
+
+        async function deleteConsent() {
+            const userId = (document.getElementById('delete-consent-user-id').value || '').trim();
+            if (!userId) { showResult('delete-consent', 'Please enter a User ID.', 'error'); return; }
+            if (!confirm(`Delete consent for "${userId}"? Enrollment will be blocked until consent is re-granted.`)) return;
+            try {
+                const res  = await fetch(`${API_BASE}/consent/${encodeURIComponent(userId)}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (res.ok) {
+                    showResult('delete-consent', `✅ Consent deleted for ${userId}.`, 'success');
+                    document.getElementById('delete-consent-user-id').value = '';
+                    loadAllConsents();
+                } else {
+                    showResult('delete-consent', `❌ ${data.detail || res.statusText}`, 'error');
+                }
+            } catch (err) {
+                showResult('delete-consent', `❌ ${connError(err)}`, 'error');
+            }
+        }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3/drawing_utils.js" crossorigin="anonymous"></script>
 </body>
 </html>

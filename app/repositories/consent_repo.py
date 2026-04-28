@@ -43,3 +43,28 @@ def get_consent_details(user_id: str):
         }
     finally:
         db.close()
+
+
+def list_all_consents():
+    db = SessionLocal()
+    try:
+        records = db.query(Consent).order_by(Consent.timestamp.desc()).all()
+        return [
+            {"user_id": r.user_id, "consent_version": r.consent_version, "timestamp": r.timestamp}
+            for r in records
+        ]
+    finally:
+        db.close()
+
+
+def delete_consent(user_id: str) -> bool:
+    db = SessionLocal()
+    try:
+        record = db.query(Consent).filter(Consent.user_id == user_id).first()
+        if record is None:
+            return False
+        db.delete(record)
+        db.commit()
+        return True
+    finally:
+        db.close()

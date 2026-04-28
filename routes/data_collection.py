@@ -110,6 +110,31 @@ def get_training_data_stats(user_id: Optional[str] = None):
     return stats
 
 
+@router.get("/training-data/{user_id}/gallery")
+def get_training_gallery(user_id: str):
+    """Return lists of image filenames for a user's positive and negative folders."""
+    IMG_EXTS = {'.jpg', '.jpeg', '.png', '.heic'}
+    result = {"positive": [], "negative": []}
+    for category in ("positive", "negative"):
+        folder = os.path.join("data", user_id, category)
+        if os.path.isdir(folder):
+            result[category] = sorted(
+                f for f in os.listdir(folder)
+                if os.path.splitext(f)[1].lower() in IMG_EXTS
+            )
+    return result
+
+
+@router.get("/training-data/{user_id}/{category}/{filename}")
+def serve_training_image(user_id: str, category: str, filename: str):
+    """Serve a single training image."""
+    from fastapi.responses import FileResponse
+    path = os.path.join("data", user_id, category, filename)
+    if not os.path.isfile(path):
+        raise HTTPException(status_code=404, detail="Image not found")
+    return FileResponse(path)
+
+
 @router.delete("/training-data/{user_id}/{category}")
 def delete_training_data(user_id: str, category: str):
     """
