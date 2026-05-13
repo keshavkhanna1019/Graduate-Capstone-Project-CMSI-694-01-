@@ -3,6 +3,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.db import ensure_sqlite_schema
+
 from routes.health import router as health_router
 from routes.recognition import router as recognition_router
 from routes.consent import router as consent_router
@@ -11,6 +13,8 @@ from routes.embeddings import router as embeddings_router
 from routes.training import router as training_router
 from routes.data_collection import router as data_collection_router
 from routes.recognition_logs import router as recognition_logs_router
+
+ensure_sqlite_schema()
 
 app = FastAPI(title="Face Recognition Backend", description="Deep Learning Assignment #2 - Face Recognition System")
 

@@ -12,6 +12,20 @@ Base = declarative_base()
 SQLITE_DB_PATH = "face.db"
 
 
+def ensure_sqlite_schema() -> None:
+    """Add columns missing on older face.db files."""
+    conn = sqlite3.connect(SQLITE_DB_PATH, check_same_thread=False)
+    try:
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(embeddings)").fetchall()}
+        if "extraction_model_path" not in cols:
+            conn.execute(
+                "ALTER TABLE embeddings ADD COLUMN extraction_model_path TEXT"
+            )
+            conn.commit()
+    finally:
+        conn.close()
+
+
 def get_connection() -> sqlite3.Connection:
     conn = sqlite3.connect(SQLITE_DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row

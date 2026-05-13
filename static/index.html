@@ -441,7 +441,7 @@
                 <span class="nav-icon">📸</span> Collect Data
             </button>
             <button type="button" class="nav-item" onclick="switchTab('train', this)">
-                <span class="nav-icon">🏋️</span> Train Model
+                <span class="nav-icon">🏋️</span> Train SVM
             </button>
             <button type="button" class="nav-item" onclick="switchTab('consent', this)">
                 <span class="nav-icon">🔐</span> Consent
@@ -601,13 +601,15 @@
                 <p class="section-sub">Capture training images from your webcam. This is the first step before training.</p>
 
                 <div class="banner green">
-                    <strong>Workflow:</strong> <strong>Collect Data</strong> → Train Model → Enroll → Recognize<br>
+                    <strong>Workflow:</strong> <strong>Collect Data</strong> → Enroll → Train SVM → Recognize<br>
                     Capture the target person as <strong>Positive</strong> and other people as <strong>Negative</strong>.
                 </div>
 
                 <div class="input-group" style="margin-bottom:18px;">
                     <label for="collect-user-id">User ID</label>
-                    <input type="text" id="collect-user-id" placeholder="e.g., user_123" required>
+                    <input type="text" id="collect-user-id" placeholder="e.g., user_123" required
+                           oninput="resetConsentStatus()" onblur="checkCollectConsent()">
+                    <div id="collect-consent-status" style="margin-top:6px;font-size:0.83rem;"></div>
                     <small style="color:#6b7280;font-size:0.78rem;">Images saved to data/{user_id}/positive/ and negative/</small>
                 </div>
 
@@ -646,13 +648,48 @@
 
                 <div id="capture-preview" style="margin:18px 0;text-align:center;"></div>
 
+                <!-- Gallery upload -->
+                <div class="card" style="margin-top:16px;">
+                    <h3>Upload from Gallery</h3>
+                    <p style="font-size:0.845rem;color:var(--text-2);margin-bottom:14px;">Select multiple photos at once. Choose whether they are Positive (the enrolled person) or Negative (other people).</p>
+
+                    <div style="display:flex;gap:10px;margin-bottom:14px;">
+                        <button type="button" id="gallery-cat-positive" onclick="setGalleryCategory('positive')"
+                            style="flex:1;padding:9px;border-radius:8px;border:2px solid #2196f3;background:#eff6ff;color:#1d4ed8;font-weight:600;font-size:0.855rem;cursor:pointer;">
+                            📷 Positive
+                        </button>
+                        <button type="button" id="gallery-cat-negative" onclick="setGalleryCategory('negative')"
+                            style="flex:1;padding:9px;border-radius:8px;border:2px solid #e5e7eb;background:#fff;color:#6b7280;font-weight:600;font-size:0.855rem;cursor:pointer;">
+                            👤 Negative
+                        </button>
+                    </div>
+
+                    <div class="upload-area" id="gallery-upload-area"
+                         ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)"
+                         ondrop="handleGalleryDrop(event)" onclick="document.getElementById('gallery-file-input').click()">
+                        <span class="upload-icon">🖼️</span>
+                        <p>Drag & drop photos here, or click to browse</p>
+                        <small style="color:#9ca3af;">Supports JPG, PNG — select multiple at once</small>
+                        <input type="file" id="gallery-file-input" class="file-input" accept="image/*" multiple onchange="handleGalleryFiles(event)">
+                    </div>
+
+                    <div id="gallery-upload-progress" style="display:none;margin-top:12px;">
+                        <div style="background:#e5e7eb;border-radius:6px;height:8px;overflow:hidden;margin-bottom:8px;">
+                            <div id="gallery-progress-bar" style="height:100%;background:var(--accent);width:0%;transition:width 0.2s;border-radius:6px;"></div>
+                        </div>
+                        <p id="gallery-progress-text" style="font-size:0.835rem;color:#6b7280;text-align:center;"></p>
+                    </div>
+
+                    <div class="result" id="gallery-result" style="margin-top:12px;"></div>
+                </div>
+
                 <div class="card" style="margin-top:16px;">
                     <h3>Instructions</h3>
                     <ol style="line-height:1.9;font-size:0.855rem;color:#374151;padding-left:18px;">
                         <li>Enter a User ID for the person you're training</li>
                         <li><strong>Positive:</strong> Capture 20–50 photos of that person (angles, expressions, lighting)</li>
                         <li><strong>Negative:</strong> Capture 10–20 photos of different people</li>
-                        <li>Then go to <strong>Train Model</strong> to train the Siamese network</li>
+                        <li>Then go to <strong>Train SVM</strong> to train the classifier</li>
                     </ol>
                 </div>
 
@@ -667,53 +704,23 @@
 
             <!-- Train Model -->
             <div id="train" class="tab-content">
-                <p class="section-sub">Train the Siamese neural network on your collected images. Run this after collecting enough data.</p>
+                <p class="section-sub">Train the classifier so the system can tell your enrolled users apart. Do this once after enrolling everyone, and again whenever you add or re-enroll a user.</p>
 
-                <div class="banner amber">
-                    <strong>Workflow:</strong> Collect Data → <strong>Train Model</strong> → Enroll → Recognize<br>
-                    100–200 epochs recommended for good accuracy.
-                </div>
-
-                <div class="input-group">
-                    <label for="train-user-id">User ID</label>
-                    <input type="text" id="train-user-id" placeholder="e.g., user_123" required>
-                    <small style="color:#6b7280;font-size:0.78rem;">Each user gets their own trained model.</small>
-                </div>
-                <div class="input-group">
-                    <label for="train-epochs">Epochs</label>
-                    <input type="number" id="train-epochs" value="50" min="1" max="200">
-                    <small style="color:#6b7280;font-size:0.78rem;">More = better accuracy but slower (recommend 100–200)</small>
-                </div>
-                <div class="input-group">
-                    <label for="train-batch-size">Batch Size</label>
-                    <input type="number" id="train-batch-size" value="16" min="1" max="64">
-                </div>
-                <div class="input-group">
-                    <label for="train-data-dir">Data Directory</label>
-                    <input type="text" id="train-data-dir" value="data" placeholder="data">
+                <div class="banner blue">
+                    <strong>Workflow:</strong> Enroll Face → <strong>Train SVM</strong> → Recognize Face<br>
+                    The SVM learns a sharp decision boundary between enrolled users using their ArcFace embeddings.
                 </div>
 
-                <button class="btn" id="train-btn" onclick="startTraining()" style="margin-left:0;">Start Training</button>
-                <button class="btn" id="train-stop-btn" onclick="stopTraining()" style="display:none;background:#dc3545;">Stop Training</button>
+                <div id="svm-status-badge" style="margin-bottom:18px;font-size:0.855rem;color:#6b7280;">Checking status…</div>
 
-                <div class="loading" id="train-loading" style="display:none;">
+                <button class="btn" id="train-svm-btn" onclick="trainSVM()" style="margin-left:0;background:#059669;font-size:0.95rem;padding:11px 28px;">Train SVM</button>
+
+                <div class="loading" id="svm-loading" style="display:none;margin-top:16px;">
                     <div class="spinner"></div>
-                    <p id="train-status-text">Starting training...</p>
+                    <p>Training SVM classifier…</p>
                 </div>
 
-                <div id="train-progress" style="margin:20px 0;display:none;">
-                    <div style="background:#e5e7eb;border-radius:8px;height:26px;overflow:hidden;">
-                        <div id="train-progress-bar" style="background:linear-gradient(90deg,var(--accent),var(--accent-dark));height:100%;width:0%;transition:width 0.3s;display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:0.82rem;">
-                            <span id="train-progress-text">0%</span>
-                        </div>
-                    </div>
-                    <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:0.855rem;">
-                        <div><strong>Epoch:</strong> <span id="train-epoch">0</span>/<span id="train-total-epochs">0</span></div>
-                        <div><strong>Loss:</strong> <span id="train-loss">-</span></div>
-                    </div>
-                </div>
-
-                <div class="result" id="train-result"></div>
+                <div class="result" id="svm-result" style="margin-top:16px;"></div>
             </div>
 
             <!-- Consent -->
@@ -826,7 +833,7 @@
             recognize: 'Recognize Face',
             manage: 'Manage',
             collect: 'Collect Data',
-            train: 'Train Model',
+            train: 'Train SVM',
             consent: 'Consent',
             extract: 'Debug'
         };
@@ -836,6 +843,13 @@
             if (typeof detail === 'string') return detail;
             if (Array.isArray(detail)) return detail.map(e => (e && e.msg) ? e.msg : JSON.stringify(e)).join('; ');
             return String(detail);
+        }
+
+        function escapeHtml(s) {
+            if (s == null) return '';
+            const d = document.createElement('div');
+            d.textContent = String(s);
+            return d.innerHTML;
         }
 
         function connError(error) {
@@ -869,19 +883,7 @@
             if (tabName === 'manage') loadEmbeddings();
 
             if (tabName === 'train') {
-                fetch(`${API_BASE}/training-status`)
-                    .then(r => r.json())
-                    .then(status => {
-                        if (status.is_training) {
-                            document.getElementById('train-progress').style.display = 'block';
-                            document.getElementById('train-loading').style.display = 'block';
-                            document.getElementById('train-btn').disabled = true;
-                            document.getElementById('train-stop-btn').style.display = 'inline-flex';
-                            startStatusPolling();
-                        }
-                        updateTrainingStatus(status);
-                    })
-                    .catch(() => {});
+                refreshSvmStatus();
             }
         }
 
@@ -1002,17 +1004,47 @@
 
                 if (response.ok) {
                     if (data.matches && data.matches.length > 0) {
-                        let html = `
-                            <p class="recognize-rank-note"><strong>How to read this:</strong> Results are ranked by similarity. #1 is whoever in the database matched best — not necessarily the last person you enrolled.</p>
-                            <h3>Results (${ms}ms)</h3>`;
-                        data.matches.forEach((m, i) => {
-                            html += `
-                                <div class="match-item">
-                                    <div><strong>#${i+1}</strong> ${m.user_id}</div>
-                                    <div class="match-score">${(m.score*100).toFixed(1)}%</div>
-                                </div>`;
-                        });
-                        showResult('recognize', html, 'success', true);
+                        const isUnknown = data.verdict === 'unknown';
+                        const isSVM     = data.classifier === 'svm';
+                        const classifierLabel = isSVM
+                            ? `<span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:5px;font-size:0.78rem;font-weight:600;">SVM</span>`
+                            : `<span style="background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:5px;font-size:0.78rem;font-weight:600;">Cosine</span>`;
+
+                        if (isUnknown) {
+                            const pct = (data.matches[0].score * 100).toFixed(1);
+                            showResult('recognize',
+                                `<h3>🚫 Unknown Face ${classifierLabel}</h3>
+                                <p style="margin:10px 0 0;color:#92400e;">No enrolled user matched confidently (best: ${pct}%).</p>
+                                ${data.note ? `<p style="margin:10px 0 0;color:#6b7280;font-size:0.84rem;">${escapeHtml(data.note)}</p>` : ''}`,
+                                'error', true
+                            );
+                        } else {
+                            const scoreLabel = isSVM ? 'Confidence' : 'Similarity';
+                            let html = `
+                                <p class="recognize-rank-note"><strong>How to read this:</strong> ${isSVM
+                                    ? 'SVM probability — the higher the %, the more confident the match.'
+                                    : 'Cosine similarity — train the SVM for sharper scores.'
+                                }</p>
+                                <h3>Results ${classifierLabel} (${ms}ms)</h3>`;
+                            data.matches.forEach((m, i) => {
+                                const pct = (m.score * 100).toFixed(1);
+                                const barColor = i === 0 ? 'var(--accent)' : '#d1d5db';
+                                html += `
+                                    <div class="match-item">
+                                        <div><strong>#${i+1}</strong> ${escapeHtml(m.user_id)}</div>
+                                        <div style="display:flex;align-items:center;gap:10px;">
+                                            <div style="width:120px;height:7px;background:#f3f4f6;border-radius:4px;overflow:hidden;">
+                                                <div style="width:${Math.min(100,m.score*100)}%;height:100%;background:${barColor};border-radius:4px;"></div>
+                                            </div>
+                                            <div class="match-score">${pct}%</div>
+                                        </div>
+                                    </div>`;
+                            });
+                            if (data.note) {
+                                html += `<p class="recognize-rank-note" style="margin-top:12px;padding:12px;border-radius:8px;background:#fffbeb;border:1px solid #fcd34d;">${escapeHtml(data.note)}</p>`;
+                            }
+                            showResult('recognize', html, 'success', true);
+                        }
                     } else {
                         showResult('recognize', '❌ No matches found. This face is not enrolled in the system.', 'error');
                     }
@@ -1159,6 +1191,46 @@
             document.getElementById('train-loading').style.display = 'none';
             document.getElementById('train-stop-btn').style.display = 'none';
             if (trainingStatusInterval) { clearInterval(trainingStatusInterval); trainingStatusInterval = null; }
+        }
+
+        async function refreshSvmStatus() {
+            try {
+                const res = await fetch(`${API_BASE}/svm-status`);
+                const d = await res.json();
+                const badge = document.getElementById('svm-status-badge');
+                if (!badge) return;
+                if (d.is_trained) {
+                    badge.innerHTML = `<span style="color:#059669;font-weight:600;">✓ SVM trained</span> — ${d.n_users} users, ${d.n_samples} samples (${d.users.join(', ')})`;
+                } else {
+                    badge.innerHTML = `<span style="color:#b45309;font-weight:600;">Not trained</span> — enroll users then click Train SVM`;
+                }
+            } catch {}
+        }
+
+        async function trainSVM() {
+            document.getElementById('train-svm-btn').disabled = true;
+            document.getElementById('svm-loading').style.display = 'block';
+            document.getElementById('svm-result').innerHTML = '';
+            document.getElementById('svm-result').className = 'result';
+
+            try {
+                const res = await fetch(`${API_BASE}/train-svm`, { method: 'POST' });
+                const d = await res.json();
+                if (res.ok) {
+                    document.getElementById('svm-result').innerHTML = `<h3>✅ ${escapeHtml(d.message)}</h3>`;
+                    document.getElementById('svm-result').className = 'result success';
+                    refreshSvmStatus();
+                } else {
+                    document.getElementById('svm-result').innerHTML = `<h3>❌ ${escapeHtml(formatApiDetail(d.detail) || 'Error')}</h3>`;
+                    document.getElementById('svm-result').className = 'result error';
+                }
+            } catch (err) {
+                document.getElementById('svm-result').innerHTML = `<h3>❌ ${connError(err)}</h3>`;
+                document.getElementById('svm-result').className = 'result error';
+            } finally {
+                document.getElementById('train-svm-btn').disabled = false;
+                document.getElementById('svm-loading').style.display = 'none';
+            }
         }
 
         // ── MediaPipe Face Mesh ────────────────────────────────────────────────
@@ -1344,7 +1416,47 @@
         let stream = null, video = null, canvas = null;
         let stopCollectDetection = null, lastFaceLandmarks = null;
 
+        function resetConsentStatus() {
+            const el = document.getElementById('collect-consent-status');
+            if (el) el.innerHTML = '';
+        }
+
+        async function checkCollectConsent() {
+            const userId = (document.getElementById('collect-user-id').value || '').trim();
+            const statusEl = document.getElementById('collect-consent-status');
+            if (!userId || !statusEl) return true;
+
+            try {
+                const res  = await fetch(`${API_BASE}/consent/${encodeURIComponent(userId)}`);
+                const data = await res.json();
+                if (res.ok && data.consent_given) {
+                    statusEl.innerHTML = `<span style="color:#059669;font-weight:600;">✓ Consent on file</span>`;
+                    return true;
+                } else {
+                    statusEl.innerHTML = `<span style="color:#dc2626;font-weight:600;">✗ No consent on file for "${userId}" — grant consent first via the Consent tab.</span>`;
+                    return false;
+                }
+            } catch {
+                statusEl.innerHTML = '';
+                return false;
+            }
+        }
+
+        async function requireConsent() {
+            const userId = (document.getElementById('collect-user-id').value || '').trim();
+            if (!userId) {
+                showResult('collect', '❌ Please enter a User ID first.', 'error');
+                return false;
+            }
+            const allowed = await checkCollectConsent();
+            if (!allowed) {
+                showResult('collect', `❌ Cannot collect data for "${userId}" — no biometric consent on file. Grant consent in the Consent tab first.`, 'error');
+            }
+            return allowed;
+        }
+
         async function startCamera() {
+            if (!await requireConsent()) return;
             try {
                 video = document.getElementById('video');
                 canvas = document.getElementById('canvas');
@@ -1493,6 +1605,87 @@
             }
         }
 
+        // ── Gallery upload from device ─────────────────────────────────────────
+        let galleryCategory = 'positive';
+
+        function setGalleryCategory(cat) {
+            galleryCategory = cat;
+            const posBtn = document.getElementById('gallery-cat-positive');
+            const negBtn = document.getElementById('gallery-cat-negative');
+            if (cat === 'positive') {
+                posBtn.style.borderColor = '#2196f3'; posBtn.style.background = '#eff6ff'; posBtn.style.color = '#1d4ed8';
+                negBtn.style.borderColor = '#e5e7eb'; negBtn.style.background = '#fff';    negBtn.style.color = '#6b7280';
+            } else {
+                negBtn.style.borderColor = '#f59e0b'; negBtn.style.background = '#fffbeb'; negBtn.style.color = '#92400e';
+                posBtn.style.borderColor = '#e5e7eb'; posBtn.style.background = '#fff';    posBtn.style.color = '#6b7280';
+            }
+        }
+
+        function handleGalleryDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            uploadGalleryFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+        }
+
+        function handleGalleryFiles(e) {
+            uploadGalleryFiles(Array.from(e.target.files));
+            e.target.value = '';
+        }
+
+        async function uploadGalleryFiles(files) {
+            const userId = (document.getElementById('collect-user-id').value || '').trim();
+            if (!userId) {
+                document.getElementById('gallery-result').innerHTML = '<h3>❌ Enter a User ID first.</h3>';
+                document.getElementById('gallery-result').className = 'result error';
+                return;
+            }
+            if (!files.length) return;
+
+            // Block positive uploads without consent
+            if (galleryCategory === 'positive' && !await requireConsent()) return;
+
+            const progressWrap = document.getElementById('gallery-upload-progress');
+            const progressBar  = document.getElementById('gallery-progress-bar');
+            const progressText = document.getElementById('gallery-progress-text');
+            const resultEl     = document.getElementById('gallery-result');
+
+            progressWrap.style.display = 'block';
+            resultEl.innerHTML = '';
+            resultEl.className = 'result';
+
+            let done = 0, failed = 0;
+            for (const file of files) {
+                try {
+                    const b64 = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload  = e => resolve(e.target.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    });
+                    const res = await fetch(`${API_BASE}/save-training-image`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ image_data: b64, category: galleryCategory, user_id: userId }),
+                    });
+                    if (res.ok) done++; else failed++;
+                } catch { failed++; }
+
+                const pct = Math.round(((done + failed) / files.length) * 100);
+                progressBar.style.width = pct + '%';
+                progressText.textContent = `${done + failed} / ${files.length} uploaded…`;
+            }
+
+            progressWrap.style.display = 'none';
+            if (failed === 0) {
+                resultEl.innerHTML = `<h3>✅ ${done} photo${done !== 1 ? 's' : ''} saved as <strong>${galleryCategory}</strong></h3>`;
+                resultEl.className = 'result success';
+            } else {
+                resultEl.innerHTML = `<h3>⚠️ ${done} saved, ${failed} failed</h3>`;
+                resultEl.className = 'result error';
+            }
+            refreshStats();
+        }
+
         // ── Gallery ────────────────────────────────────────────────────────────
         async function loadGallery() {
             const userId = (document.getElementById('gallery-user-id').value || '').trim();
@@ -1561,6 +1754,7 @@
                                     <div style="color:#6b7280;font-size:0.82rem;">
                                         <span style="color:${color};">${status}</span>
                                         ${emb.enrolled_at ? ` · Enrolled ${new Date(emb.enrolled_at).toLocaleString()}` : ''}
+                                        ${emb.extraction_model_path ? `<br>Model: <code style="font-size:0.78rem;">${escapeHtml(emb.extraction_model_path)}</code>` : '<br><span style="color:#b45309;">Model: not recorded — delete and enroll again after this update</span>'}
                                     </div>
                                 </div>
                                 <button class="btn" onclick="deleteEmbedding('${emb.user_id}')" style="background:#dc3545;margin:0;padding:7px 14px;font-size:0.8rem;">🗑 Delete</button>

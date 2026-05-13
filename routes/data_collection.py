@@ -8,6 +8,8 @@ import base64
 import uuid
 from datetime import datetime
 
+from app.repositories.consent_repo import has_consent
+
 router = APIRouter(prefix="/api", tags=["data-collection"])
 
 
@@ -21,14 +23,24 @@ class SaveImageRequest(BaseModel):
 @router.post("/save-training-image")
 async def save_training_image(request: SaveImageRequest):
     """
-    Save a training image to the user-specific directory
+    Save a training image to the user-specific directory.
+    Positive images require biometric consent from the user being enrolled.
     """
     valid_categories = ['positive', 'negative']
-    
+
     if request.category not in valid_categories:
         raise HTTPException(
             status_code=400,
             detail=f"Invalid category. Must be one of: {valid_categories}"
+        )
+
+    # Positive images are biometric data of a specific person — consent required.
+    # Negative images are "other people" examples and don't map to a single identity.
+    if request.category == 'positive' and not has_consent(request.user_id):
+        raise HTTPException(
+            status_code=403,
+            detail=f"Cannot collect training data for '{request.user_id}': no biometric consent on file. "
+                   "Grant consent first via the Consent tab or Enroll tab."
         )
     
     # Create user-specific directory structure: data/{user_id}/{category}/

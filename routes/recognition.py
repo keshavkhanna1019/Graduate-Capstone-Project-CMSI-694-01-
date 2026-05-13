@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 import tempfile
 import os
 import time
@@ -13,6 +13,9 @@ from app.services.face_extraction import extract_face_embedding
 
 
 router = APIRouter(prefix="/api", tags=["recognition"])
+
+
+SHARED_MODEL_PATH = "siamese_model.h5"
 
 
 class EnrollEmbeddingRequest(BaseModel):
@@ -71,6 +74,9 @@ Meaning:
 
 class RecognizeEmbeddingResponse(BaseModel):
     matches: List[MatchResult]
+    note: Optional[str] = None
+    verdict: Optional[str] = None       # "match" | "unknown" | None (cosine fallback)
+    classifier: Optional[str] = None    # "svm" | "cosine"
 
 '''
 This is the final answer for recognition.
@@ -96,10 +102,7 @@ def enroll_embedding(request: EnrollEmbeddingRequest):
     # -----------------------------
     # 2. Store embedding
     # -----------------------------
-    save_embedding(
-            user_id=request.user_id,
-            embedding=request.embedding
-    )
+    save_embedding(user_id=request.user_id, embedding=request.embedding, extraction_model_path=None)
 
     return EnrollEmbeddingResponse(
         status="accepted",
@@ -144,7 +147,7 @@ def recognize_embedding(request: RecognizeEmbeddingRequest):
     # 2. Compute similarity
     # -----------------------------
     similarities = []
-    for user_id, stored_embedding in embeddings:
+    for user_id, stored_embedding, _stored_model in embeddings:
         score = cosine_similarity(request.embedding, stored_embedding)
         similarities.append(MatchResult(user_id=user_id, score=score))
 
@@ -251,9 +254,12 @@ async def enroll_face(
     Enroll a face from an uploaded image.
     This combines ML face extraction and enrollment in one step.
     """
-    # Check consent first
-    user_has_consent = has_consent(user_id)
-    
+    uid = (user_id or "").strip()
+    if not uid:
+        raise HTTPException(status_code=400, detail="user_id is required")
+
+    user_has_consent = has_consent(uid)
+
     if not user_has_consent:
         raise HTTPException(
             status_code=403,
@@ -288,41 +294,46 @@ async def enroll_face(
             )
         
         try:
-            # Extract embedding using user-specific model
-            # Model path format: siamese_model_{user_id}.h5
-            user_model_path = f"siamese_model_{user_id}.h5"
-            
-            # Fallback to default model if user-specific model doesn't exist
-            if not os.path.exists(user_model_path):
-                if os.path.exists("siamese_model.h5"):
-                    user_model_path = "siamese_model.h5"
-                elif os.path.exists("siamese_model_v2.h5"):
-                    user_model_path = "siamese_model_v2.h5"
-                else:
-                    raise HTTPException(
-                        status_code=400,
-                        detail=f"No trained model found for {user_id}. Please train a model first:\n"
-                               f"1. Collect data for {user_id} (positive: your images, negative: others)\n"
-                               f"2. Train model for {user_id} using 'Train Model' tab\n"
-                               f"3. Then enroll your face"
-                    )
-            
-            start_time = time.time()
-            
-            # Use bytes directly (more reliable than temp file path)
-            embedding = extract_face_embedding(image_bytes=content, model_path=user_model_path)
-            
-            extraction_time = (time.time() - start_time) * 1000  # Convert to ms
-            
-            # Store embedding
+            import numpy as np
+
+            # Extract one embedding from the uploaded photo (ArcFace, no .h5 needed)
+            raw_emb = extract_face_embedding(image_bytes=content)
+
+            # If this user already has stored positive training images, blend them in
+            # so the stored embedding is an average of multiple views → more robust
+            extra_embeddings = []
+            user_pos_dir = os.path.join("data", uid, "positive")
+            if os.path.isdir(user_pos_dir):
+                img_files = sorted([
+                    os.path.join(user_pos_dir, f)
+                    for f in os.listdir(user_pos_dir)
+                    if f.lower().endswith(('.jpg', '.jpeg', '.png'))
+                ])[:8]  # use up to 8 training photos
+                for img_path in img_files:
+                    try:
+                        extra_embeddings.append(
+                            extract_face_embedding(image_path=img_path, )
+                        )
+                    except Exception:
+                        pass
+
+            if extra_embeddings:
+                all_embs = np.array([raw_emb] + extra_embeddings)
+                avg_emb = np.mean(all_embs, axis=0)
+                avg_emb = avg_emb / (np.linalg.norm(avg_emb) + 1e-8)
+                final_embedding = avg_emb.tolist()
+            else:
+                final_embedding = raw_emb
+
             save_embedding(
-                user_id=user_id,
-                embedding=embedding
+                user_id=uid,
+                embedding=final_embedding,
+                extraction_model_path=None,
             )
-            
+
             return EnrollEmbeddingResponse(
                 status="accepted",
-                user_id=user_id
+                user_id=uid
             )
         finally:
             # Clean up temp file
@@ -382,118 +393,89 @@ async def recognize_face(
             )
         
         try:
-            # Extract embedding for recognition
-            # We'll compare against each enrolled user using their specific model
             start_time = time.time()
-            
-            # Try to find any available model (we'll use user-specific models during comparison)
-            default_model_path = None
-            if os.path.exists("siamese_model.h5"):
-                default_model_path = "siamese_model.h5"
-            elif os.path.exists("siamese_model_v2.h5"):
-                default_model_path = "siamese_model_v2.h5"
-            
-            if default_model_path is None:
-                raise HTTPException(
-                    status_code=400,
-                    detail="No trained model found. Please train at least one user model first."
-                )
-            
-            # Extract embedding using default model (we'll re-extract with user models during comparison)
-            embedding = extract_face_embedding(image_bytes=content, model_path=default_model_path)
-            
-            extraction_time = (time.time() - start_time) * 1000  # Convert to ms
-            
-            # Load active embeddings
+            embedding = extract_face_embedding(image_bytes=content)
+            extraction_time = (time.time() - start_time) * 1000  # noqa: F841
+
             stored_embeddings = load_active_embeddings()
-            
             if not stored_embeddings:
-                return RecognizeEmbeddingResponse(matches=[])
-            
-            # Compute similarity (with timing)
-            # Use user-specific models for accurate comparison
-            similarity_start = time.time()
-            similarities = []
-            
-            for stored_user_id, stored_embedding in stored_embeddings:
-                # Try to use the user-specific model for this enrolled user
-                user_model_path = f"siamese_model_{stored_user_id}.h5"
-                
-                # Re-extract embedding using the enrolled user's model for accurate comparison
+                return RecognizeEmbeddingResponse(matches=[], verdict=None, classifier=None)
+
+            # ── Try SVM classifier first ───────────────────────────────────────
+            from app.services.svm_classifier import get_svm_classifier
+            svm = get_svm_classifier()
+
+            note = None
+            verdict = None
+            classifier = None
+
+            if svm.is_trained:
                 try:
-                    if os.path.exists(user_model_path):
-                        # Use user-specific model
-                        user_embedding = extract_face_embedding(image_bytes=content, model_path=user_model_path)
-                        score = cosine_similarity(user_embedding, stored_embedding)
+                    all_probs, best_user, best_prob, is_match = svm.predict(embedding)
+                    classifier = "svm"
+                    verdict = "match" if is_match else "unknown"
+
+                    if verdict == "unknown":
+                        # Return unknown result — face doesn't confidently match anyone
+                        matches = [MatchResult(user_id="Unknown", score=round(best_prob, 4))]
+                        note = (
+                            f"No confident match found (best score {best_prob*100:.1f}% < 45% threshold). "
+                            "This face is not enrolled or the enrollment photo is very different from the test photo."
+                        )
                     else:
-                        # Fallback to default model
-                        score = cosine_similarity(embedding, stored_embedding)
-                except Exception as e:
-                    # If user model fails, use default
-                    print(f"⚠️  Error using {user_model_path}, using default model: {e}")
+                        # Return SVM probabilities for all users, ranked
+                        matches = [
+                            MatchResult(user_id=uid, score=round(prob, 4))
+                            for uid, prob in all_probs[:top_k]
+                        ]
+                except Exception as svm_err:
+                    # SVM prediction failed — fall through to cosine
+                    print(f"SVM prediction error, falling back to cosine: {svm_err}")
+                    svm = None
+
+            if not svm or not svm.is_trained:
+                # ── Fallback: cosine similarity ────────────────────────────────
+                classifier = "cosine"
+                similarities = []
+                for stored_user_id, stored_embedding, _ in stored_embeddings:
                     score = cosine_similarity(embedding, stored_embedding)
-                
-                # Debug: Print all similarity scores to help diagnose
-                print(f"🔍 Similarity with {stored_user_id}: {score:.4f} ({score*100:.2f}%)")
-                
-                # DIAGNOSIS-BASED THRESHOLD:
-                # Based on actual model performance analysis:
-                # - Well-trained user-specific models: Same person = 75-88%, Different = <50%
-                # - Default models (collapsed): Everyone = 85-95% (WRONG - need user-specific model)
-                # - user_keshav model works correctly (negative similarity with others)
-                # - user_123/user_1234 using default model (92% similarity - collapsed!)
-                #
-                # Strategy: Accept reasonable scores, but log warnings for suspicious patterns
-                
-                # Check if we're using user-specific model
-                using_user_model = os.path.exists(user_model_path)
-                
-                if using_user_model:
-                    # User-specific model: Accept all scores and let user see them
-                    # The model should produce good scores, but if it doesn't, we still show them
-                    # This helps diagnose model issues
+                    print(f"🔍 {stored_user_id}: cosine={score:.6f}")
                     similarities.append(MatchResult(user_id=stored_user_id, score=score))
-                    
-                    # Log warnings for suspicious patterns
-                    if score > 0.95:
-                        print(f"⚠️  WARNING: Very high score {score:.4f} for {stored_user_id}")
-                        print(f"   >95% suggests model collapse - model may need retraining")
-                    elif score < 0.50:
-                        print(f"⚠️  WARNING: Low score {score:.4f} for {stored_user_id}")
-                        print(f"   <50% suggests different person or model needs better training")
-                    else:
-                        print(f"✅ Match found for {stored_user_id} with {score:.4f} ({score*100:.2f}%)")
-                else:
-                    # Default model: Likely has embedding collapse, but show all scores
-                    # Accept all scores to help diagnose
-                    similarities.append(MatchResult(user_id=stored_user_id, score=score))
-                    
-                    # Log warnings
-                    if score > 0.85:
-                        print(f"⚠️  WARNING: {stored_user_id} using default model with high score {score:.4f}")
-                        print(f"   Default models often have embedding collapse. Train user-specific model for {stored_user_id}.")
-                    print(f"✅ Match found for {stored_user_id} with {score:.4f} ({score*100:.2f}%) [using default model]")
-            
-            # Sort by score and take top_k
-            similarities.sort(key=lambda x: x.score, reverse=True)
-            matches = similarities[:top_k]
-            similarity_time = (time.time() - similarity_start) * 1000  # Convert to ms
-            
-            # Log recognition event
+
+                similarities.sort(key=lambda x: x.score, reverse=True)
+                matches = similarities[:top_k]
+
+                if len(similarities) >= 2:
+                    s0, s1 = similarities[0].score, similarities[1].score
+                    if s0 >= 0.995 and s1 >= 0.995:
+                        note = (
+                            "Two or more users scored almost identically — likely embedding collapse. "
+                            "Re-enroll all users, or train the SVM for sharper separation."
+                        )
+                    elif (s0 - s1) < 0.005 and s0 > 0.85:
+                        note = (
+                            "Top matches are very close. Train the SVM classifier for better separation."
+                        )
+
             matched_user_id = matches[0].user_id if matches else None
             similarity_score = matches[0].score if matches else None
-            
+
             try:
                 log_recognition_event(
                     device_id=device_id,
                     top_k=top_k,
                     matched_user_id=matched_user_id,
-                    similarity_score=similarity_score
+                    similarity_score=similarity_score,
                 )
-            except:
-                pass  # Don't fail if logging fails
-            
-            return RecognizeEmbeddingResponse(matches=matches)
+            except Exception:
+                pass
+
+            return RecognizeEmbeddingResponse(
+                matches=matches,
+                note=note,
+                verdict=verdict,
+                classifier=classifier,
+            )
             
         finally:
             # Clean up temp file

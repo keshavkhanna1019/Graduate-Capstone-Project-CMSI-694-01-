@@ -11,7 +11,7 @@ try:
     from tensorflow.keras.models import Model
     from tensorflow.keras.layers import (
         Layer, Conv2D, Dense, MaxPooling2D, Input, Flatten,
-        BatchNormalization, Dropout
+        BatchNormalization, Dropout, GlobalAveragePooling2D
     )
     TENSORFLOW_AVAILABLE = True
 except ImportError:
@@ -34,92 +34,106 @@ class L2Normalize(Layer):
 
 
 class L1Distance(Layer):
-    """Custom L1 distance layer for Siamese network"""
+    """Kept for loading legacy .h5 models trained with BCE loss."""
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-    
+
     def call(self, inputs):
         if isinstance(inputs, (list, tuple)) and len(inputs) == 2:
             anchor, positive = inputs[0], inputs[1]
         else:
             raise ValueError(f"L1Distance expects 2 inputs, got {type(inputs)}")
-        
         return tf.reduce_sum(tf.abs(anchor - positive), axis=1, keepdims=True)
-    
+
     def get_config(self):
         return super().get_config()
 
 
+class EuclideanDistance(Layer):
+    """Euclidean distance layer — output used directly with contrastive loss."""
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def call(self, inputs):
+        if isinstance(inputs, (list, tuple)) and len(inputs) == 2:
+            a, b = inputs[0], inputs[1]
+        else:
+            raise ValueError(f"EuclideanDistance expects 2 inputs")
+        # epsilon avoids NaN gradients at distance == 0
+        return tf.sqrt(tf.reduce_sum(tf.square(a - b), axis=1, keepdims=True) + 1e-8)
+
+    def get_config(self):
+        return super().get_config()
+
+
+def contrastive_loss(margin: float = 1.0):
+    """
+    Contrastive loss for metric learning.
+    y=1 (same person) → minimise distance.
+    y=0 (different person) → push distance above margin.
+    """
+    def loss(y_true, y_pred):
+        y_true = tf.cast(y_true, y_pred.dtype)
+        square_pred = tf.square(y_pred)
+        margin_square = tf.square(tf.maximum(margin - y_pred, 0.0))
+        return tf.reduce_mean(y_true * square_pred + (1.0 - y_true) * margin_square)
+    loss.__name__ = "contrastive_loss"
+    return loss
+
+
 def build_embedding_network(input_shape=(100, 100, 3), embedding_dim=128):
     """
-    Build the base embedding network (shared between twin networks)
-    
-    Architecture:
-    - Conv layers for feature extraction
-    - Dense layers for embedding
-    - L2 normalization for proper cosine similarity
+    Face embedding network using frozen pretrained MobileNetV2.
+
+    MobileNetV2 (trained on 1.4M ImageNet images) already produces
+    highly discriminative visual features — no task-specific training needed.
+    We just L2-normalise the 1280-dim backbone output so cosine similarity
+    works correctly at inference.  Zero trainable parameters = zero collapse.
     """
     if not TENSORFLOW_AVAILABLE:
         raise ImportError("TensorFlow is required")
-    
+
     inputs = Input(shape=input_shape, name='input_image')
-    
-    # Convolutional feature extraction
-    x = Conv2D(64, (10, 10), activation='relu', name='conv1')(inputs)
-    x = MaxPooling2D((2, 2), name='pool1')(x)
-    x = BatchNormalization(name='bn1')(x)
-    
-    x = Conv2D(128, (7, 7), activation='relu', name='conv2')(x)
-    x = MaxPooling2D((2, 2), name='pool2')(x)
-    x = BatchNormalization(name='bn2')(x)
-    
-    x = Conv2D(128, (4, 4), activation='relu', name='conv3')(x)
-    x = MaxPooling2D((2, 2), name='pool3')(x)
-    x = BatchNormalization(name='bn3')(x)
-    
-    x = Conv2D(256, (4, 4), activation='relu', name='conv4')(x)
-    x = Flatten(name='flatten')(x)
-    
-    # Dense layers for embedding
-    x = Dense(4096, activation='relu', name='dense1')(x)
-    x = Dropout(0.5, name='dropout1')(x)
-    x = Dense(embedding_dim, activation='linear', name='dense2')(x)
-    
-    # L2 normalization - CRITICAL for cosine similarity
+
+    backbone = tf.keras.applications.MobileNetV2(
+        input_shape=input_shape,
+        include_top=False,
+        weights='imagenet',
+    )
+    backbone.trainable = False
+
+    # MobileNetV2 expects pixels in [-1, 1]; our pipeline normalises to [0, 1]
+    x = tf.keras.layers.Lambda(
+        lambda img: img * 2.0 - 1.0, name='mobilenet_preprocess'
+    )(inputs)
+    x = backbone(x, training=False)
+    x = GlobalAveragePooling2D(name='gap')(x)   # → 1280-dim
     outputs = L2Normalize(name='l2_normalize')(x)
-    
+
     return Model(inputs=inputs, outputs=outputs, name='embedding_network')
 
 
 def build_siamese_model(input_shape=(100, 100, 3), embedding_dim=128):
     """
-    Build the complete Siamese network model
-    
-    Uses twin embedding networks with L1 distance comparison
+    Build the Siamese network.  Output is Euclidean distance (used with contrastive loss).
+    Embeddings are L2-normalised so cosine similarity == 1 - dist²/2 at inference time.
     """
     if not TENSORFLOW_AVAILABLE:
         raise ImportError("TensorFlow is required")
-    
-    # Build shared embedding network
+
     embedding_network = build_embedding_network(input_shape, embedding_dim)
-    
-    # Twin inputs
+
     anchor_input = Input(shape=input_shape, name='anchor_input')
     positive_input = Input(shape=input_shape, name='positive_input')
-    
-    # Generate embeddings
+
     anchor_embedding = embedding_network(anchor_input)
     positive_embedding = embedding_network(positive_input)
-    
-    # Compute L1 distance
-    distance = L1Distance(name='l1_distance')([anchor_embedding, positive_embedding])
-    
-    # Classification (same person = 1, different = 0)
-    output = Dense(1, activation='sigmoid', name='classification')(distance)
-    
+
+    distance = EuclideanDistance(name='euclidean_distance')([anchor_embedding, positive_embedding])
+
     return Model(
         inputs=[anchor_input, positive_input],
-        outputs=output,
+        outputs=distance,
         name='siamese_network'
     )
 
@@ -150,11 +164,10 @@ class SiameseNetwork:
         self.embedding_model = self.model.get_layer('embedding_network')
     
     def compile_model(self, learning_rate: float = 0.0001):
-        """Compile the model for training"""
+        """Compile the model with contrastive loss for metric learning."""
         self.model.compile(
             optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
-            loss='binary_crossentropy',
-            metrics=['accuracy']
+            loss=contrastive_loss(margin=1.0),
         )
     
     def train(
@@ -284,7 +297,9 @@ class SiameseNetwork:
                 filepath,
                 custom_objects={
                     'L1Distance': L1Distance,
-                    'L2Normalize': L2Normalize
+                    'L2Normalize': L2Normalize,
+                    'EuclideanDistance': EuclideanDistance,
+                    'contrastive_loss': contrastive_loss(margin=1.0),
                 },
                 compile=False
             )
@@ -395,10 +410,29 @@ def preprocess_image_for_siamese(
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     elif len(img.shape) == 2:
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-    
+
+    # Face detection — crop to face region so the embedding is face-only, not background
+    try:
+        gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+        cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+        face_cascade = cv2.CascadeClassifier(cascade_path)
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+        if len(faces) > 0:
+            # Pick the largest detected face
+            x, y, w, h = max(faces, key=lambda f: f[2] * f[3])
+            pad = int(max(w, h) * 0.25)
+            ih, iw = img.shape[:2]
+            x1 = max(0, x - pad)
+            y1 = max(0, y - pad)
+            x2 = min(iw, x + w + pad)
+            y2 = min(ih, y + h + pad)
+            img = img[y1:y2, x1:x2]
+    except Exception:
+        pass  # if detection fails, use full image
+
     # Resize
     img = cv2.resize(img, target_size)
-    
+
     # Normalize to [0, 1]
     img = img.astype(np.float32) / 255.0
     

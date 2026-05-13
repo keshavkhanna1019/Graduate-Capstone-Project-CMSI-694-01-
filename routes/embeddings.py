@@ -69,6 +69,7 @@ class EmbeddingInfo(BaseModel):
     is_active: bool
     enrolled_at: Optional[str] = None
     deactivated_at: Optional[str] = None
+    extraction_model_path: Optional[str] = None
 
 
 @router.get("/embeddings", response_model=List[EmbeddingInfo])
@@ -80,9 +81,10 @@ def list_all_embeddings():
     cur = conn.cursor()
     
     cur.execute("""
-        SELECT user_id, is_active, 
+        SELECT user_id, is_active,
                NULL as enrolled_at,
-               datetime(deactivated_at) as deactivated_at
+               datetime(deactivated_at) as deactivated_at,
+               extraction_model_path
         FROM embeddings
         ORDER BY user_id
     """)
@@ -95,7 +97,8 @@ def list_all_embeddings():
             user_id=row[0],
             is_active=bool(row[1]),
             enrolled_at=row[2],
-            deactivated_at=row[3]
+            deactivated_at=row[3],
+            extraction_model_path=row[4],
         )
         for row in rows
     ]

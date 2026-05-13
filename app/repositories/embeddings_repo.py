@@ -1,5 +1,7 @@
 import json
+import os
 from datetime import datetime, timezone
+from typing import List, Optional, Tuple
 
 import numpy as np
 
@@ -7,40 +9,52 @@ from app.db import SessionLocal
 from app.models import Embedding
 
 
-def save_embedding(user_id: str, embedding: list[float]):
+def save_embedding(
+    user_id: str,
+    embedding: list[float],
+    extraction_model_path: Optional[str] = None,
+):
     db = SessionLocal()
     try:
         record = db.query(Embedding).filter(Embedding.user_id == user_id).first()
+        model_name = None
+        if extraction_model_path and str(extraction_model_path).strip():
+            model_name = os.path.basename(str(extraction_model_path).strip())
         if record:
             record.embedding = json.dumps(embedding)
             record.is_active = 1
             record.deactivated_at = None
+            record.extraction_model_path = model_name
         else:
-            db.add(Embedding(
-                user_id=user_id,
-                embedding=json.dumps(embedding),
-                is_active=1,
-                deactivated_at=None
-            ))
+            db.add(
+                Embedding(
+                    user_id=user_id,
+                    embedding=json.dumps(embedding),
+                    is_active=1,
+                    deactivated_at=None,
+                    extraction_model_path=model_name,
+                )
+            )
         db.commit()
     finally:
         db.close()
 
 
-def load_active_embeddings():
+def load_active_embeddings() -> List[Tuple[str, list, Optional[str]]]:
     db = SessionLocal()
     try:
         rows = db.query(Embedding).filter(Embedding.is_active == 1).all()
         results = []
         for row in rows:
             embedding = json.loads(row.embedding)
-            embedding_array = np.array(embedding)
+            embedding_array = np.array(embedding, dtype=np.float64)
             norm = np.linalg.norm(embedding_array)
             if norm > 0:
                 embedding_array = embedding_array / norm
             else:
                 embedding_array = np.zeros_like(embedding_array)
-            results.append((row.user_id, embedding_array.tolist()))
+            model_path = getattr(row, "extraction_model_path", None)
+            results.append((row.user_id, embedding_array.tolist(), model_path))
         return results
     finally:
         db.close()

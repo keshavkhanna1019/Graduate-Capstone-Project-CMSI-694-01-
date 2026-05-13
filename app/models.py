@@ -9,6 +9,7 @@ class Embedding(Base):
     embedding = Column(Text, nullable=False)
     is_active = Column(Integer, default=1)
     deactivated_at = Column(Text, nullable=True)
+    extraction_model_path = Column(Text, nullable=True)
 
 
 class Consent(Base):

@@ -8,8 +8,9 @@ venv/
 # Local runtime state (recreated on first run)
 face.db
 
-# Model weights (large; > GitHub 100MB limit — train locally or use releases/LFS)
+# Model weights and trained classifiers (generated locally — not committed)
 *.h5
+svm_classifier.pkl
 
 # Training images (user-specific, large — collected locally via the web UI)
 data/
