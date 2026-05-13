@@ -1,0 +1,26 @@
+# Virtual environments
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+
+# Local runtime state (recreated on first run)
+face.db
+
+# Model weights and trained classifiers (generated locally — not committed)
+*.h5
+svm_classifier.pkl
+
+# Training images (user-specific, large — collected locally via the web UI)
+data/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
