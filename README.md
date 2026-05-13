@@ -1,7 +1,21 @@
-# Face Recognition System
+# Zero-Friction Face Recognition System
 
-A locally-hosted web application for face recognition using a Siamese Neural Network.
-Built with FastAPI (Python) + a plain HTML/JS frontend.
+A locally-hosted web application for face enrollment and recognition using **ArcFace** embeddings
+and an **SVM classifier**. Built with FastAPI (Python) and a plain HTML/JS frontend — no cloud
+dependencies, no API keys.
+
+---
+
+## How it works
+
+1. **Enroll** — upload or capture a photo; the backend extracts a 512-dim ArcFace embedding and
+   stores it in SQLite (no raw images stored).
+2. **Recognize** — upload or capture a photo; the backend extracts an embedding and runs it through
+   the SVM classifier (or cosine similarity fallback) to identify the person.
+3. **Optional: Train SVM** — collect a few labeled photos per user, then hit Train SVM for sharper
+   separation and unknown-face rejection.
+
+Recognition works immediately after enrollment with no training step required.
 
 ---
 
@@ -9,7 +23,7 @@ Built with FastAPI (Python) + a plain HTML/JS frontend.
 
 - **Python 3.9 or 3.11** (3.11 recommended; matches the Docker image)
 - pip
-- A webcam (for data collection and live capture features)
+- A webcam (optional — all flows also accept uploaded images)
 
 ---
 
@@ -44,83 +58,61 @@ The database (`face.db`) is created automatically on first run.
 
 ## Local artifacts (not in the repo)
 
-These files are **git-ignored** and must be generated locally:
+These files are **git-ignored** and are generated locally at runtime:
 
 | File / folder | How to get it |
 |---|---|
 | `face.db` | Created automatically when the server first starts |
-| `siamese_model.h5`, `siamese_model_user_*.h5` | Train via the web UI or API (see Model Training below) |
-| `data/` | Collected via the Collect Data tab in the UI |
+| `svm_classifier.pkl` | Generated when you click Train SVM in the UI (or call `POST /api/train-svm`) |
+| `data/` | Collected via the Collect Data tab — used only for SVM training |
+
+No model weights need to be downloaded or copied. ArcFace weights are fetched automatically by
+DeepFace on first inference and cached in `~/.deepface/`.
 
 ---
 
-## Happy-path demo (consent → enroll → recognize)
+## Happy-path demo (no training required)
 
-This is the complete flow from a clean state:
+This is the shortest path from a clean state to a working recognition result.
 
-### Step 1 — Collect training data
-1. Open **Advanced → Collect Data**
+### Step 1 — Enroll a user
+1. Open the **Enroll** tab
 2. Enter a User ID (e.g. `user_keshav`)
-3. Start the camera and capture **20–50 Positive** photos (of the target person) and **10–20 Negative** photos (of different people)
+3. Upload a clear face photo or use the webcam capture
+4. Click **Enroll Face** — consent is recorded automatically, embedding is saved
 
-### Step 2 — Train the model
-1. Open **Advanced → Train Model**
-2. Enter the same User ID, set Epochs to **100–200**, click **Start Training**
-3. Wait for training to complete (~5–15 min depending on hardware)
+### Step 2 — Recognize
+1. Open the **Recognize** tab
+2. Upload or capture a photo of the enrolled person
+3. Click **Recognize Face** — the matched user and confidence score appear
 
-### Step 3 — Enroll
-1. Open **Enroll Face** (consent is recorded automatically)
-2. Enter the User ID, upload or capture a clear face photo
-3. Click **Enroll Face** — you should see a success message
+> First inference takes 10–30 s while ArcFace weights load. Subsequent requests are fast.
+
+---
+
+## Full demo (with SVM for better accuracy)
+
+Use this flow when you have multiple enrolled users and want sharper separation and unknown-face
+rejection.
+
+### Step 1 — Enroll all users
+Follow the Enroll steps above for each user.
+
+### Step 2 — Collect training photos
+1. Open the **Collect Data** tab
+2. Select a User ID and choose **Positive** (photos of that person)
+3. Capture via webcam **or** drag-and-drop / upload images from your gallery
+4. Repeat for **Negative** photos (other people), then repeat for each enrolled user
+5. Aim for 10–20 positive photos per user
+
+### Step 3 — Train SVM
+1. Open the **Train SVM** tab
+2. Click **Train SVM** — requires at least 2 enrolled users with training photos
+3. Wait for the status badge to show `Trained` (~5–15 s)
 
 ### Step 4 — Recognize
-1. Open **Recognize Face**
-2. Upload or capture a photo of the enrolled person
-3. Click **Recognize Face** — the top match and similarity score appear
-
-> **Score guide:** scores above ~0.75 are a strong match. All scores will be
-> high if the model was undertrained (embedding collapse) — train for more epochs.
-
----
-
-## Quick-path demo (pre-trained model required)
-
-If `siamese_model.h5` already exists (e.g. copied from another machine):
-
-```bash
-# 1. Start the server
-uvicorn app.main:app --host 0.0.0.0 --port 8000
-
-# 2. Open http://localhost:8000
-# 3. Enroll Face → enter user ID → upload photo → Enroll Face
-# 4. Recognize Face → upload photo → Recognize Face
-```
-
----
-
-## Model Training
-
-Model files (`*.h5`) are large (~107 MB each) and git-ignored. Train locally:
-
-### Option 1 — Web UI (recommended)
-1. **Advanced → Collect Data**: capture Positive and Negative images for a User ID
-2. **Advanced → Train Model**: enter the User ID, 100–200 epochs, Start Training
-3. Model saved as `siamese_model_<user_id>.h5` in the project root
-
-### Option 2 — API
-```bash
-curl -X POST http://localhost:8000/api/train-model \
-  -H "Content-Type: application/json" \
-  -d '{"user_id": "user_123", "epochs": 100, "batch_size": 16, "data_dir": "data"}'
-```
-
-Training data layout (git-ignored):
-```
-data/
-└── user_123/
-    ├── positive/   # 20–50 images of the target person
-    └── negative/   # 10–20 images of other people
-```
+Recognition now uses SVM probability scores. Results show a per-user confidence bar and a
+`SVM` or `Cosine` classifier badge. Faces with no confident match are returned as `Unknown`.
 
 ---
 
@@ -131,25 +123,15 @@ data/
 docker compose up --build
 ```
 
-App available at http://localhost:8000. See Docker section notes below.
-
-### Mounting models
-Model files are not bundled in the image. Copy `.h5` files to the project root,
-then add a volume line per model in `docker-compose.yml`:
-
-```yaml
-volumes:
-  - ./siamese_model.h5:/app/siamese_model.h5
-  - ./siamese_model_user_keshav.h5:/app/siamese_model_user_keshav.h5
-```
+App available at http://localhost:8000. No model files need to be mounted — ArcFace weights are
+fetched automatically on first inference.
 
 ### Known limitations
 
 | Limitation | Detail |
 |---|---|
-| **No GPU** | TensorFlow runs on CPU in the container. ~2–5s per inference. |
-| **Model size** | Each `*.h5` is ~107 MB — train locally and bind-mount. |
-| **Cold start** | First inference takes 10–30s while TensorFlow loads the model. |
+| **No GPU** | ArcFace inference runs on CPU. ~1–3 s per request after warm-up. |
+| **Cold start** | First inference downloads ArcFace weights (~100 MB) and takes 10–30 s. |
 | **SQLite** | Single-file DB — not suitable for multi-replica deployments. |
 | **Camera** | Webcam features work when the container is on the same machine as the browser. For remote hosting, serve over HTTPS. |
 
@@ -169,7 +151,7 @@ API_ORIGIN=http://127.0.0.1:8001 python smoke_test.py
 python smoke_test.py --image path/to/face.jpg
 ```
 
-Exits `0` on pass, `1` on failure. Enroll/recognize are skipped if no model or image is present.
+Exits `0` on pass, `1` on failure.
 
 ---
 
@@ -182,39 +164,23 @@ Image Recognition App/
 │   ├── db.py                # SQLite connection (face.db)
 │   ├── init_db.py           # Creates tables on first run
 │   ├── models.py            # SQLAlchemy models
-│   ├── repositories/        # DB access layer
+│   ├── repositories/        # DB access layer (embeddings, consent, logs)
 │   └── services/
-│       ├── siamese_network.py   # Siamese network (TF/Keras)
-│       ├── face_extraction.py   # Embedding extraction
-│       └── similarity.py        # Cosine similarity
+│       ├── face_extraction.py   # ArcFace embedding extraction (DeepFace)
+│       ├── svm_classifier.py    # SVM classifier with unknown-face rejection
+│       ├── similarity.py        # Cosine similarity (fallback)
+│       └── siamese_network.py   # Legacy — kept for reference only
 ├── routes/                  # FastAPI routers (one per domain)
+│   ├── recognition.py       # Enroll + recognize endpoints
+│   ├── training.py          # Train SVM + status endpoints
+│   ├── embeddings.py        # Embedding management
+│   └── data_collection.py   # Training image save/stats
 ├── static/index.html        # Single-file frontend (HTML/CSS/JS)
 ├── smoke_test.py            # API smoke check script
 ├── requirements.txt
 ├── Dockerfile
 ├── docker-compose.yml
 └── README.md
-```
-
----
-
-## Troubleshooting
-
-**`uvicorn: command not found`**
-```bash
-source venv/bin/activate   # activate the venv first
-```
-
-**`No trained model found at siamese_model.h5`**
-Train a model first (see Model Training above).
-
-**All recognition scores are very high (>95%) for everyone**
-The model has embedding collapse from insufficient training. Re-train with 100–200 epochs and more training images.
-
-**Database errors**
-```bash
-rm face.db
-python -m app.init_db
 ```
 
 ---
@@ -226,21 +192,57 @@ python -m app.init_db
 | GET | `/health` | Health check |
 | GET | `/` | Web UI |
 | GET | `/docs` | Swagger API docs |
-| POST | `/api/consent` | Grant consent |
-| GET | `/api/consent/{user_id}` | Check consent |
+| POST | `/api/consent` | Grant biometric consent |
+| GET | `/api/consent/{user_id}` | Check consent status |
 | GET | `/api/consents` | List all consents |
-| DELETE | `/api/consent/{user_id}` | Delete consent |
-| POST | `/api/enroll-face` | Enroll a face |
-| POST | `/api/recognize-face` | Recognize a face |
+| DELETE | `/api/consent/{user_id}` | Revoke consent |
+| POST | `/api/enroll-face` | Enroll from uploaded image (ArcFace) |
+| POST | `/api/enroll-embedding` | Enroll from raw embedding vector |
+| POST | `/api/recognize-face` | Recognize from uploaded image (SVM → cosine) |
+| POST | `/api/recognize-embedding` | Recognize from raw embedding vector |
+| POST | `/api/extract-face-embedding` | Extract ArcFace embedding without enrolling |
 | GET | `/api/embeddings` | List enrolled users |
 | DELETE | `/api/embeddings/{user_id}` | Delete enrollment |
-| POST | `/api/train-model` | Start model training |
-| GET | `/api/training-status` | Poll training progress |
-| POST | `/api/save-training-image` | Save a training image |
-| GET | `/api/training-data-stats` | Image counts per category |
+| POST | `/api/train-svm` | Train SVM classifier on stored embeddings |
+| GET | `/api/svm-status` | SVM training status and user count |
+| GET | `/api/training-status` | Background training job status |
+| POST | `/api/save-training-image` | Save a labeled training image |
+| GET | `/api/training-data-stats` | Image counts per user/category |
+
+---
+
+## Troubleshooting
+
+**`uvicorn: command not found`**
+```bash
+source venv/bin/activate   # activate the venv first
+```
+
+**First inference is very slow (30+ s)**
+ArcFace weights are being downloaded on first use. This is a one-time download cached at
+`~/.deepface/`. Subsequent requests are fast.
+
+**"No face detected" error**
+Ensure the photo has a clearly visible, well-lit face. The system uses OpenCV face detection —
+extreme angles, heavy blur, or very dark images may fail detection. `enforce_detection=False` is
+set, so it will attempt extraction even with low-confidence detection.
+
+**SVM returns "Unknown" for a known user**
+The SVM confidence threshold is 45%. Re-enroll the user with a clearer photo, or collect more
+training photos and retrain the SVM.
+
+**SVM "needs at least 2 users" error**
+The SVM requires at least 2 enrolled users with training photos to learn class boundaries.
+Enroll a second user before training.
+
+**Database errors**
+```bash
+rm face.db
+python -m app.init_db
+```
 
 ---
 
 ## Author
 
-Keshav Khanna — CMSI 6352 Deep Learning Assignment #2
+Keshav Khanna — CMSI 694 Graduate Capstone Project
